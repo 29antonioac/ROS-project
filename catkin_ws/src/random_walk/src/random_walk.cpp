@@ -12,6 +12,11 @@ RandomWalk::RandomWalk()
 {
 	possibleCrash = false;
 
+  ANGLE_DIRECTION = -1;
+  MIN_PROXIMITY_RANGE_M = 0.5;
+
+  node.getParam("minimum_distance", MIN_PROXIMITY_RANGE_M);
+
 	// Advertise a new publisher for the simulated robot's velocity command topic
 	commandPub = node.advertise<geometry_msgs::Twist>("cmd_vel", 10);
 
@@ -25,7 +30,7 @@ void RandomWalk::moveForward() {
 	msg.linear.x = FORWARD_SPEED_MPS;
 
   if(possibleCrash)
-    msg.angular.z = ANGLE_SPEED_RPS;
+    msg.angular.z = ANGLE_DIRECTION * ANGLE_SPEED_RPS;
 
   commandPub.publish(msg);
 };
@@ -48,6 +53,8 @@ void RandomWalk::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 
 	if (closestRange < MIN_PROXIMITY_RANGE_M) {
 		ROS_INFO("Turn!");
+    if (!possibleCrash)
+      ANGLE_DIRECTION *= -1;
     possibleCrash = true;
 	}
   else{

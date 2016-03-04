@@ -1,0 +1,6 @@
+<launch>
+  <node name="stage" pkg="stage_ros" type="stageros" args="$(find stage_ros)/world/willow-erratic.world"/>
+  <node name="random_walk" pkg="random_walk" type="random_walk"/>
+
+  <param name="minimum_distance" type="double" value="1.0" />
+</launch>

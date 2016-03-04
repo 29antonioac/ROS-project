@@ -7,9 +7,10 @@ public:
   // Tunable parameters
   const static double FORWARD_SPEED_MPS = 0.2;
   const static double ANGLE_SPEED_RPS = 2;
+  double       ANGLE_DIRECTION;
   const static double MIN_SCAN_ANGLE_RAD = -30.0/180*M_PI;
   const static double MAX_SCAN_ANGLE_RAD = +30.0/180*M_PI;
-  const static float MIN_PROXIMITY_RANGE_M = 0.5; // Should be smaller than sensor_msgs::LaserScan::range_max
+  double MIN_PROXIMITY_RANGE_M; // Should be smaller than sensor_msgs::LaserScan::range_max
 
   RandomWalk();
   void startMoving();
