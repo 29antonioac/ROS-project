@@ -27,10 +27,11 @@ RandomWalk::RandomWalk()
 // Send a velocity command
 void RandomWalk::moveForward() {
 	geometry_msgs::Twist msg; // The default constructor will set all commands to 0
-	msg.linear.x = FORWARD_SPEED_MPS;
 
-  if(possibleCrash)
-    msg.angular.z = ANGLE_DIRECTION * ANGLE_SPEED_RPS;
+	if(possibleCrash)
+		msg.angular.z = ANGLE_DIRECTION * ANGLE_SPEED_RPS;
+	else
+		msg.linear.x = FORWARD_SPEED_MPS;
 
   commandPub.publish(msg);
 };
