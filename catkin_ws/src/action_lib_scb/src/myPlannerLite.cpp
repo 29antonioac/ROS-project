@@ -99,7 +99,7 @@ void LocalPlanner::setTotalRepulsivo(){
     Tupla delta0;
     Tupla v;
 
-    for (int i = 0; i <= posObs.size(); i++) {
+    for (int i = 0; i < posObs.size(); i++) {
       v = posObs[i];
       getOneDeltaRepulsivo(v, delta0);
       deltaObst.x += delta0.x;
