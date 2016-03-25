@@ -83,6 +83,13 @@ void LocalPlanner::getOneDeltaRepulsivo(Tupla posObst, Tupla &deltaO){
 void LocalPlanner::setTotalRepulsivo(){
 //Calcula la componente total repulsiva como suma de las componentes repulsivas para cada obstáculo.
     deltaObst.x = deltaObst.y = 0;
+    Tupla delta0;
+
+    for (Tupla v: posObs) {
+      getOneDeltaRepulsivo(v, delta0)
+      deltaObst.x += delta0.x;
+      deltaObst.y += delta0.y
+    }
 
 }
 
@@ -144,4 +151,3 @@ bool LocalPlanner::goalAchieved(){
 //determina que el objetivo se ha alcanzado cuando ambas velocidades son 0.
     return (v_angular == 0 and v_lineal == 0);
     }
-
