@@ -106,6 +106,7 @@ public:
 
             ROS_INFO("Estoy en la posición:(%f, %f), yaw: %f", planner.pos.x, planner.pos.y,planner.yaw);
             planner.setDeltaAtractivo();
+            planner.setTotalRepulsivo();
             //********************************************************
             //aquí habrá que mejorar el navegador local para que evite obstáculos
             //con el componente repulsivo
@@ -164,6 +165,7 @@ int main(int argc, char** argv)
 {
 
     ros::init(argc, argv, "mi_move_base");
+    ROS_INFO("wwwiiiiiiiiii");
 
 
 
@@ -179,8 +181,10 @@ int main(int argc, char** argv)
     }
 
     //Spawn the server
+    ROS_INFO("fdgfgdgfdfgdfgdfg");
 
     MyActionServer server(ros::this_node::getName());
+    ROS_INFO("Spawned!");
 
 
 

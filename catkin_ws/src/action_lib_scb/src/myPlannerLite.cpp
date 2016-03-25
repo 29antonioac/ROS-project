@@ -1,5 +1,6 @@
 #include "myPlannerLite.h"
 #include "geometry_msgs/Twist.h"
+#include "utils.h"
 #include <tf/transform_datatypes.h> //para transformar quaternions en ángulos, necesario en odomCallBack
 
 LocalPlanner::LocalPlanner()
@@ -60,17 +61,14 @@ void LocalPlanner::setDeltaAtractivo() {
     double theta = atan2(posGoal.y - pos.y, posGoal.x - pos.x);
     if (d-CAMPOATT.radius < TOLERANCIA){
         deltaGoal.x = deltaGoal.y = 0;
-        return;
-        }
-    if ( (CAMPOATT.radius < d) and (d < (CAMPOATT.spread - CAMPOATT.radius ))){
+    }
+    else if ( (CAMPOATT.radius <= d) and (d <= (CAMPOATT.spread + CAMPOATT.radius ))){
         deltaGoal.x = CAMPOATT.intens *(d - CAMPOATT.radius)*cos(theta);
         deltaGoal.y = CAMPOATT.intens *(d - CAMPOATT.radius)*sin(theta);
-        return;
     }
-    if (d > (CAMPOATT.spread + CAMPOATT.radius)){
+    else if (d > (CAMPOATT.spread + CAMPOATT.radius)){
         deltaGoal.x = CAMPOATT.intens*CAMPOATT.spread*cos(theta);
         deltaGoal.y = CAMPOATT.intens*CAMPOATT.spread*sin(theta);
-        return;
     }
 
 }
@@ -78,17 +76,34 @@ void LocalPlanner::setDeltaAtractivo() {
 void LocalPlanner::getOneDeltaRepulsivo(Tupla posObst, Tupla &deltaO){
 // recibe una posición de un obstáculo y calcula el componente repulsivo para ese obstáculo.
 // Devuelve los valores en deltaO.x y deltaO.y
+//Calcula el componente atractivo del campo de potencial
+    double d = distancia(posObst, pos);
+    double theta = atan2(posObst.y - pos.y, posObst.x - pos.x);
+    if (d-CAMPOREP.radius < TOLERANCIA){
+        deltaGoal.x = -sign(cos(theta)) * INF;
+        deltaGoal.y = -sign(sin(theta)) * INF;
+    }
+    else if ( (CAMPOREP.radius <= d) and (d <= (CAMPOREP.spread + CAMPOREP.radius ))){
+        deltaGoal.x = -CAMPOREP.intens *(CAMPOREP.spread + CAMPOREP.radius - d)*cos(theta);
+        deltaGoal.y = -CAMPOREP.intens *(CAMPOREP.spread + CAMPOREP.radius - d)*sin(theta);
+    }
+    else if (d > (CAMPOREP.spread + CAMPOREP.radius)){
+        deltaGoal.x = 0;
+        deltaGoal.y = 0;
+    }
 }
 
 void LocalPlanner::setTotalRepulsivo(){
 //Calcula la componente total repulsiva como suma de las componentes repulsivas para cada obstáculo.
     deltaObst.x = deltaObst.y = 0;
     Tupla delta0;
+    Tupla v;
 
-    for (Tupla v: posObs) {
-      getOneDeltaRepulsivo(v, delta0)
+    for (int i = 0; i <= posObs.size(); i++) {
+      v = posObs[i];
+      getOneDeltaRepulsivo(v, delta0);
       deltaObst.x += delta0.x;
-      deltaObst.y += delta0.y
+      deltaObst.y += delta0.y;
     }
 
 }
