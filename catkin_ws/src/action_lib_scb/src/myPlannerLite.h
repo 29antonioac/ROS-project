@@ -49,11 +49,8 @@ class LocalPlanner
         bool goalAchieved();    //Devuelve true cuando se ha alcanzado el objetivo
         void setDeltaAtractivo();
         void getOneDeltaRepulsivo(Tupla posO, Tupla &deltaO);
-        void setTotalRepulsivo();
-        void setDeltaTotal(){
-            delta.x = deltaGoal.x + deltaObst.x;
-            delta.y = deltaGoal.y + deltaObst.y;
-            };
+        void setDeltaRepulsivo();
+        void setDeltaTotal();
         void setv_Angular();
         void setv_Lineal();
         double distancia(Tupla src, Tupla dst) {

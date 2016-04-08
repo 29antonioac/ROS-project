@@ -63,8 +63,16 @@ void LocalPlanner::setDeltaAtractivo() {
         deltaGoal.x = deltaGoal.y = 0;
     }
     else if ( (CAMPOATT.radius <= d) and (d <= (CAMPOATT.spread + CAMPOATT.radius ))){
-        deltaGoal.x = CAMPOATT.intens *(d - CAMPOATT.radius)*cos(theta);
-        deltaGoal.y = CAMPOATT.intens *(d - CAMPOATT.radius)*sin(theta);
+        // Calculamos el coeficiente de la intensidad: distancia menos el radio atractivo
+        float coeffIntensidad = d - CAMPOATT.radius;
+
+        // Impedimos que el coeficiente anterior sea menor que 1
+        // Conseguimos así que cerca del objetivo la velocidad no se reduzca
+        if(coeffIntensidad < 1)
+            coeffIntensidad = 1;
+
+        deltaGoal.x = CAMPOATT.intens * coeffIntensidad *cos(theta);
+        deltaGoal.y = CAMPOATT.intens * coeffIntensidad *sin(theta);
     }
     else if (d > (CAMPOATT.spread + CAMPOATT.radius)){
         deltaGoal.x = CAMPOATT.intens*CAMPOATT.spread*cos(theta);
@@ -73,27 +81,27 @@ void LocalPlanner::setDeltaAtractivo() {
 
 }
 
-void LocalPlanner::getOneDeltaRepulsivo(Tupla posObst, Tupla &deltaO){
+void LocalPlanner::getOneDeltaRepulsivo(Tupla posObst, Tupla &delta0){
 // recibe una posición de un obstáculo y calcula el componente repulsivo para ese obstáculo.
 // Devuelve los valores en deltaO.x y deltaO.y
 //Calcula el componente atractivo del campo de potencial
     double d = distancia(posObst, pos);
     double theta = atan2(posObst.y - pos.y, posObst.x - pos.x);
     if (d-CAMPOREP.radius < TOLERANCIA){
-        deltaGoal.x = -sign(cos(theta)) * INF;
-        deltaGoal.y = -sign(sin(theta)) * INF;
+        delta0.x = -sign(cos(theta)) * INF;
+        delta0.y = -sign(sin(theta)) * INF;
     }
     else if ( (CAMPOREP.radius <= d) and (d <= (CAMPOREP.spread + CAMPOREP.radius ))){
-        deltaGoal.x = -CAMPOREP.intens *(CAMPOREP.spread + CAMPOREP.radius - d)*cos(theta);
-        deltaGoal.y = -CAMPOREP.intens *(CAMPOREP.spread + CAMPOREP.radius - d)*sin(theta);
+        delta0.x = -CAMPOREP.intens *(CAMPOREP.spread + CAMPOREP.radius - d)*cos(theta);
+        delta0.y = -CAMPOREP.intens *(CAMPOREP.spread + CAMPOREP.radius - d)*sin(theta);
     }
     else if (d > (CAMPOREP.spread + CAMPOREP.radius)){
-        deltaGoal.x = 0;
-        deltaGoal.y = 0;
+        delta0.x = 0;
+        delta0.y = 0;
     }
 }
 
-void LocalPlanner::setTotalRepulsivo(){
+void LocalPlanner::setDeltaRepulsivo(){
 //Calcula la componente total repulsiva como suma de las componentes repulsivas para cada obstáculo.
     deltaObst.x = deltaObst.y = 0;
     Tupla delta0;
@@ -106,6 +114,17 @@ void LocalPlanner::setTotalRepulsivo(){
       deltaObst.y += delta0.y;
     }
 
+    ROS_INFO("Delta obstáculo: %f, %f", deltaObst.x, deltaObst.y);
+
+}
+
+void LocalPlanner::setDeltaTotal(){
+    if(deltaObst > constante){
+        delta.x = 0;
+        delta.y = 0;
+    }
+    delta.x = deltaGoal.x + deltaObst.x;
+    delta.y = deltaGoal.y + deltaObst.y;
 }
 
 void LocalPlanner::scanCallBack(const sensor_msgs::LaserScan::ConstPtr& scan)
@@ -160,9 +179,9 @@ void LocalPlanner::setv_Angular(){
 void LocalPlanner::setv_Lineal(){
 //calcula la velocidad lineal
     v_lineal =  sqrt(delta.x*delta.x + delta.y*delta.y);
-    }
-bool LocalPlanner::goalAchieved(){
+}
 
+bool LocalPlanner::goalAchieved(){
 //determina que el objetivo se ha alcanzado cuando ambas velocidades son 0.
     return (v_angular == 0 and v_lineal == 0);
-    }
+}

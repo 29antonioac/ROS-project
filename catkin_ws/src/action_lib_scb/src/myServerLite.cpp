@@ -106,11 +106,7 @@ public:
 
             ROS_INFO("Estoy en la posición:(%f, %f), yaw: %f", planner.pos.x, planner.pos.y,planner.yaw);
             planner.setDeltaAtractivo();
-            // planner.setTotalRepulsivo();
-            //********************************************************
-            //aquí habrá que mejorar el navegador local para que evite obstáculos
-            //con el componente repulsivo
-            //****************************************************************
+            planner.setDeltaRepulsivo();
             planner.setDeltaTotal();
             planner.setv_Angular();
             planner.setv_Lineal();
