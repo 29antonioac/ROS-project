@@ -7,7 +7,7 @@ LocalPlanner::LocalPlanner()
 {
 
     CAMPOATT.radius = 0.01; CAMPOATT.spread = 3.5; CAMPOATT.intens = 0.05; //Parámetros de configuración (radio, spread, alpha) del campo actractivo.
-    CAMPOREP.radius = 0.02; CAMPOREP.spread = 1.5; CAMPOREP.intens = 0.5;//Parámetros de configuración (radio, spread, beta)del campo repulsivo.
+    CAMPOREP.radius = 0.02; CAMPOREP.spread = 1.0; CAMPOREP.intens = 0.05;//Parámetros de configuración (radio, spread, beta)del campo repulsivo.
     posGoal.x = posGoal.y = 0;  //Posición del objetivo
     pos.x = pos.y = 0;      //Posición actual
     yaw =0;     //Angulo (en radianes) de orientación del robot
