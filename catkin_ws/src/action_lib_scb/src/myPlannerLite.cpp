@@ -7,7 +7,7 @@ LocalPlanner::LocalPlanner()
 {
 
     CAMPOATT.radius = 0.01; CAMPOATT.spread = 3.5; CAMPOATT.intens = 0.05; //Parámetros de configuración (radio, spread, alpha) del campo actractivo.
-    CAMPOREP.radius = 0.02; CAMPOREP.spread = 1.0; CAMPOREP.intens = 0.01;//Parámetros de configuración (radio, spread, beta)del campo repulsivo.
+    CAMPOREP.radius = 0.02; CAMPOREP.spread = 1.5; CAMPOREP.intens = 0.5;//Parámetros de configuración (radio, spread, beta)del campo repulsivo.
     posGoal.x = posGoal.y = 0;  //Posición del objetivo
     pos.x = pos.y = 0;      //Posición actual
     yaw =0;     //Angulo (en radianes) de orientación del robot
@@ -119,10 +119,6 @@ void LocalPlanner::setDeltaRepulsivo(){
 }
 
 void LocalPlanner::setDeltaTotal(){
-    if(deltaObst > constante){
-        delta.x = 0;
-        delta.y = 0;
-    }
     delta.x = deltaGoal.x + deltaObst.x;
     delta.y = deltaGoal.y + deltaObst.y;
 }
@@ -132,6 +128,9 @@ void LocalPlanner::scanCallBack(const sensor_msgs::LaserScan::ConstPtr& scan)
 	// Find the closest range between the defined minimum and maximum angles
 	int minIndex = ceil((MIN_SCAN_ANGLE_RAD - scan->angle_min) / scan->angle_increment);
 	int maxIndex = floor((MAX_SCAN_ANGLE_RAD - scan->angle_min) / scan->angle_increment);
+
+    ROS_INFO("MIN_SCAN_ANGLE_RAD: %f \t scan->angle_min: %f", MIN_SCAN_ANGLE_RAD, scan->angle_min);
+    ROS_INFO("MAX_SCAN_ANGLE_RAD: %f \t scan->angle_max: %f", MAX_SCAN_ANGLE_RAD, scan->angle_max);
 
     //limpio el vector de posiciones de obstaculos
     if (posObs.size() > 0)
@@ -149,8 +148,8 @@ void LocalPlanner::scanCallBack(const sensor_msgs::LaserScan::ConstPtr& scan)
 		//ROS_INFO("Obstaculo %d en posición (%f,%f)",currIndex,obstaculo.x, obstaculo.y);
 		posObs.push_back(obstaculo);
 		bearing += scan->angle_increment;
-		}
 	}
+}
 
 double normalize(double angle) {
 //normaliza un ángulo al intervalo [-PI, PI]
@@ -177,11 +176,30 @@ void LocalPlanner::setv_Angular(){
 
 }
 void LocalPlanner::setv_Lineal(){
-//calcula la velocidad lineal
-    v_lineal =  sqrt(delta.x*delta.x + delta.y*delta.y);
+    float d, distMasCercana;
+    distMasCercana = INF;
+
+    // Calculamos la distancia la objeto más cercano
+    for (int i = 0; i < posObs.size(); i++) {
+        d = distancia(posObs[i], pos);
+
+        if(distancia(posObs[i], pos) < distMasCercana){
+            distMasCercana = d;
+        }
+    }
+
+    // Si el objeto más cercano está demasiado cerca, hay que
+    // dejar de avanzar y sólo girar.
+    if(distMasCercana < 1){
+        v_lineal = 0.05;
+    }
+    else{
+        //calcula la velocidad lineal
+        v_lineal =  std::min(sqrt(delta.x*delta.x + delta.y*delta.y), CAMPOATT.intens*CAMPOATT.spread);
+    }
 }
 
 bool LocalPlanner::goalAchieved(){
-//determina que el objetivo se ha alcanzado cuando ambas velocidades son 0.
+    //determina que el objetivo se ha alcanzado cuando ambas velocidades son 0.
     return (v_angular == 0 and v_lineal == 0);
 }
