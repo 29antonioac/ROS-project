@@ -19,9 +19,10 @@
   \subsection{Detención más rápida cerca del objetivo}
 
   \subsection{Corrección del comportamiento suicida}
+    Para solucionar este comportamiento simplemente hemos acotado la velocidad máxima del robot. Así, aunque el módulo del vector de movimiento resultante (debido a un factor de repulsión muy grande) fuera muy grande, al estar acotado daría tiempo al robot para girar y evitar el obstáculo. 
 
   \subsection{Salida de mínimos locales}
-    Lo primero ha sido determinar la siguiente cuestión: ¿Cómo sabemos que estamos atascados en un mínimo local? Nosotros lo determinamos si no salimos de un radio de 0.5 unidades de distancia durante 5 segundos (25 iteraciones a 5Hz). Una vez hemos decidido, mandamos al robot un goal en una posición aleatoria del mapa. Esto lo mantenemos durante 10 segundos, que es un tiempo viable para salir de una esquina, y después de eso volvemos a mandarle el goal original. 
+    Lo primero ha sido determinar la siguiente cuestión: ¿Cómo sabemos que estamos atascados en un mínimo local? Nosotros lo determinamos si no salimos de un radio de 0.5 unidades de distancia durante 5 segundos (25 iteraciones a 5Hz). Una vez hemos decidido, mandamos al robot un goal en una posición aleatoria del mapa. Esto lo mantenemos durante 10 segundos, que es un tiempo viable para salir de una esquina, y después de eso volvemos a mandarle el goal original.
 
   \subsection{Reducción de oscilaciones}
     Para reducir las oscilaciones hemos ideado lo siguiente: como es la componente repulsiva la que las causa debido a las variaciones bruscas de la dirección del vector, nosotros le aplicamos la media a las dos últimas componentes repulsivas calculadas. Así se reduce la diferencia entre las iteraciones anteriores y la actual, evitando oscilaciones.
