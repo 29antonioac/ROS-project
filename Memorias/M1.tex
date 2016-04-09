@@ -59,7 +59,11 @@
     Para solucionar este comportamiento simplemente hemos acotado la velocidad máxima del robot. Así, aunque el módulo del vector de movimiento resultante (debido a un factor de repulsión muy grande) fuera muy grande, al estar acotado daría tiempo al robot para girar y evitar el obstáculo.
 
   \subsection{Salida de mínimos locales}
-    Lo primero ha sido determinar la siguiente cuestión: ¿Cómo sabemos que estamos atascados en un mínimo local? Nosotros lo determinamos si no salimos de un radio de 0.5 unidades de distancia durante 5 segundos (25 iteraciones a 5Hz). Una vez hemos decidido, mandamos al robot un goal en una posición aleatoria del mapa. Esto lo mantenemos durante 10 segundos, que es un tiempo viable para salir de una esquina, y después de eso volvemos a mandarle el goal original.
+    Lo primero ha sido determinar la siguiente cuestión: ¿Cómo sabemos que estamos atascados en un mínimo local? Nosotros lo determinamos si no salimos de un radio de $0.5$ unidades de distancia durante $5$ segundos ($25$ iteraciones a 5Hz). Esto lo hacemos almacenando la posición anterior del robot. La mantenemos siempre que la distancia a dicha posición sea menor que $0.5$. En cuanto hay un cambio mayor de dicho umbral, actualizamos la posición anterior para en la siguiente iteración volver a comprobar la diferencia de distancia.
+
+    Una vez hemos decidido, mandamos al robot un objetivo en una posición aleatoria del mapa. Esto lo mantenemos durante 10 segundos, que es un tiempo viable para salir de una esquina, y después de eso volvemos a mandarle el objetivo original.
+
+    Si se diera el caso de que la posición aleatoria del mapa está demasiado cerca, o bien el tiempo de salida se ha establecido demasiado corto, no hay problemas: al volver a comprobarlo, se volvería a mandar un objetivo aleatorio y se volvería a intentar. Como nuestro objetivo es salir de un mínimo local, esto nos asegura que en algún momento saldrá y volverá a intentar llegar al objetivo.
 
   \subsection{Reducción de oscilaciones}
     Para reducir las oscilaciones hemos ideado lo siguiente: como es la componente repulsiva la que las causa debido a las variaciones bruscas de la dirección del vector, nosotros le aplicamos la media a las dos últimas componentes repulsivas calculadas
