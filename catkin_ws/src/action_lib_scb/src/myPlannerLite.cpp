@@ -139,9 +139,6 @@ void LocalPlanner::scanCallBack(const sensor_msgs::LaserScan::ConstPtr& scan)
 	int minIndex = ceil((MIN_SCAN_ANGLE_RAD - scan->angle_min) / scan->angle_increment);
 	int maxIndex = floor((MAX_SCAN_ANGLE_RAD - scan->angle_min) / scan->angle_increment);
 
-    ROS_INFO("MIN_SCAN_ANGLE_RAD: %f \t scan->angle_min: %f", MIN_SCAN_ANGLE_RAD, scan->angle_min);
-    ROS_INFO("MAX_SCAN_ANGLE_RAD: %f \t scan->angle_max: %f", MAX_SCAN_ANGLE_RAD, scan->angle_max);
-
     //limpio el vector de posiciones de obstaculos
     if (posObs.size() > 0)
         posObs.clear();

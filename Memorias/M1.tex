@@ -25,6 +25,11 @@
   \section{Ejercicio 1}
 
   \subsection{Aumento del campo de visión}
+  Para el aumento del campo de visión se analizó primero la definición del escáner láser en el archivo \emph{.world} que describe al robot.
+
+  Nos aseguramos entonces de que el campo \emph{fov} de la definición \emph{sensor} fuera al menos 270.
+
+  Sin embargo, esto define únicamente el rango físico del láser, no los datos que de él consideramos. Así, recalculamos las constantes \emph{MIN_SCAN_ANGLE_RAD} y \emph{MIN_SCAN_ANGLE_RAD} definidas en \emph{myPlannerLite.h} para que reflejaran nuestras necesidades: definimos la primera  a -135 grados y la segunda a 135, teniendo así un total de 270 grados.
 
   \subsection{Detención más rápida cerca del objetivo}
 
