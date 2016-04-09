@@ -116,13 +116,14 @@ void LocalPlanner::setDeltaRepulsivo(){
       deltaObst.y += delta0.y;
     }
 
-    deltaObst.x += deltaObstAnterior.x;
-    deltaObst.y += deltaObstAnterior.y;
+    Tupla deltaObstAnteriorCopia = deltaObstAnterior;
+    deltaObstAnterior = deltaObst;
+
+    deltaObst.x += deltaObstAnteriorCopia.x;
+    deltaObst.y += deltaObstAnteriorCopia.y;
 
     deltaObst.x /= 2;
     deltaObst.y /= 2;
-
-    deltaObstAnterior = deltaObst;
 
     ROS_INFO("Delta obstáculo: %f, %f", deltaObst.x, deltaObst.y);
 }

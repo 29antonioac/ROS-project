@@ -9,9 +9,19 @@
   \newpage
 
   \section{Resumen}
-  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-  
+  Esta memoria describe brevemente el trabajo realizado para la entrega 2 de la práctica 1.
+
+  Se han desarrollado únicamente las tareas de la navegación local sin mapa:
+  \begin{itemize}
+      \item Se ha aumentado el campo de visión del escáner láser del robot analizando el código y modificándolo convenientemente.
+      \item Se ha implementado una técnica para evitar la detención del robot cerca del objetivo controlando el módulo del vector atractivo.
+      \item Se ha corregido el comportamiento suicida del robot controlando el módulo de la velocidad lineal.
+      \item Se ha diseñado una técnica de mínimos locales con aplazamiento de objetivos y control local de la posición.
+      \item Se ha reducido el comportamiento oscilatorio del robot con técnicas aritméticas que suavizan el movimiento.
+  \end{itemize}
+
+  La siguiente sección describe con detalle cada una de estas técnicas.
+
   \section{Ejercicio 1}
 
   \subsection{Aumento del campo de visión}
