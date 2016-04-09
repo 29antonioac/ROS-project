@@ -17,9 +17,10 @@
   \subsection{Aumento del campo de visión}
 
   \subsection{Detención más rápida cerca del objetivo}
+    Para que el robot no pare demasiado lento sobre el punto objetivo, acotamos la mínima velocidad que puede tener el robot, ya que al estar muy cerca del objetivo, el vector de movimiento resultante tiene módulo muy pequeño y por tanto la velocidad del robot es muy baja. Acotando por abajo dicha velocidad conseguimos que el robot no deje nunca de moverse a un ritmo aceptable.
 
   \subsection{Corrección del comportamiento suicida}
-    Para solucionar este comportamiento simplemente hemos acotado la velocidad máxima del robot. Así, aunque el módulo del vector de movimiento resultante (debido a un factor de repulsión muy grande) fuera muy grande, al estar acotado daría tiempo al robot para girar y evitar el obstáculo. 
+    Para solucionar este comportamiento simplemente hemos acotado la velocidad máxima del robot. Así, aunque el módulo del vector de movimiento resultante (debido a un factor de repulsión muy grande) fuera muy grande, al estar acotado daría tiempo al robot para girar y evitar el obstáculo.
 
   \subsection{Salida de mínimos locales}
     Lo primero ha sido determinar la siguiente cuestión: ¿Cómo sabemos que estamos atascados en un mínimo local? Nosotros lo determinamos si no salimos de un radio de 0.5 unidades de distancia durante 5 segundos (25 iteraciones a 5Hz). Una vez hemos decidido, mandamos al robot un goal en una posición aleatoria del mapa. Esto lo mantenemos durante 10 segundos, que es un tiempo viable para salir de una esquina, y después de eso volvemos a mandarle el goal original.
