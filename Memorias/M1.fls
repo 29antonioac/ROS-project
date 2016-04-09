@@ -339,6 +339,7 @@ INPUT M1.toc
 INPUT /usr/share/texmf-dist/fonts/tfm/public/lm/ec-lmbx10.tfm
 OUTPUT M1.toc
 INPUT /usr/share/texmf-dist/fonts/tfm/public/lm/ec-lmbx12.tfm
+INPUT /usr/share/texmf-dist/fonts/tfm/public/lm/ec-lmri10.tfm
 INPUT M1.aux
 INPUT ./M1.out
 INPUT ./M1.out
@@ -349,3 +350,4 @@ INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmr10.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmr12.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmr17.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmr8.pfb
+INPUT /usr/share/texmf-dist/fonts/type1/public/lm/lmri10.pfb

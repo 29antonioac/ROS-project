@@ -29,7 +29,7 @@
 
   Nos aseguramos entonces de que el campo \emph{fov} de la definición \emph{sensor} fuera al menos 270.
 
-  Sin embargo, esto define únicamente el rango físico del láser, no los datos que de él consideramos. Así, recalculamos las constantes \emph{MIN_SCAN_ANGLE_RAD} y \emph{MIN_SCAN_ANGLE_RAD} definidas en \emph{myPlannerLite.h} para que reflejaran nuestras necesidades: definimos la primera  a -135 grados y la segunda a 135, teniendo así un total de 270 grados.
+  Sin embargo, esto define únicamente el rango físico del láser, no los datos que de él consideramos. Así, recalculamos las constantes \emph{MIN\_SCAN\_ANGLE\_RAD} y \emph{MIN\_SCAN\_ANGLE\_RAD} definidas en \emph{myPlannerLite.h} para que reflejaran nuestras necesidades: definimos la primera  a -135 grados y la segunda a 135, teniendo así un total de 270 grados.
 
   \subsection{Detención más rápida cerca del objetivo}
     Para que el robot no pare demasiado lento sobre el punto objetivo, acotamos la mínima velocidad que puede tener el robot, ya que al estar muy cerca del objetivo, el vector de movimiento resultante tiene módulo muy pequeño y por tanto la velocidad del robot es muy baja. Acotando por abajo dicha velocidad conseguimos que el robot no deje nunca de moverse a un ritmo aceptable.
