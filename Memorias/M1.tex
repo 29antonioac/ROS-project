@@ -32,7 +32,28 @@
   Sin embargo, esto define únicamente el rango físico del láser, no los datos que de él consideramos. Así, recalculamos las constantes \emph{MIN\_SCAN\_ANGLE\_RAD} y \emph{MIN\_SCAN\_ANGLE\_RAD} definidas en \emph{myPlannerLite.h} para que reflejaran nuestras necesidades: definimos la primera  a -135 grados y la segunda a 135, teniendo así un total de 270 grados.
 
   \subsection{Detención más rápida cerca del objetivo}
-    Para que el robot no pare demasiado lento sobre el punto objetivo, acotamos la mínima velocidad que puede tener el robot, ya que al estar muy cerca del objetivo, el vector de movimiento resultante tiene módulo muy pequeño y por tanto la velocidad del robot es muy baja. Acotando por abajo dicha velocidad conseguimos que el robot no deje nunca de moverse a un ritmo aceptable.
+    El módulo del componente atractivo de la fuerza tiende a cero cuando el robot se acerca al objetivo; esto ocurre porque depende inversamente de la distancia a la que se encuentra de él.
+
+    La solución a este problema pasa entonces por controlar este módulo, comprobando su valor y acotándolo por debajo: no queremos que sea menor que un valor prefijado. Así conseguimos que el robot no deje nunca de moverse a un ritmo aceptable.
+
+    La idea es entonces cambiar las fórmulas del componente atractivo del vector:
+    \begin{align*}
+        \Delta x &= \alpha (d-r) cos(\theta) \\
+        \Delta y &= \alpha (d-r) sen(\theta)
+    \end{align*}
+    por las siguientes:
+    \begin{align*}
+        \Delta x &= \alpha c_{d,r} cos(\theta) \\
+        \Delta y &= \alpha c_{d,r} sen(\theta)
+    \end{align*}
+    donde $c_{d,r} = max(d-r, 1)$.
+
+    Así, la componente atractiva del vector será siempre, como mínimo, la siguiente:
+    \begin{align*}
+        \Delta x &= \alpha cos(\theta) \\
+        \Delta y &= \alpha sen(\theta)
+    \end{align*}
+
 
   \subsection{Corrección del comportamiento suicida}
     Para solucionar este comportamiento simplemente hemos acotado la velocidad máxima del robot. Así, aunque el módulo del vector de movimiento resultante (debido a un factor de repulsión muy grande) fuera muy grande, al estar acotado daría tiempo al robot para girar y evitar el obstáculo.

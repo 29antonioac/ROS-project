@@ -5,4 +5,4 @@
 \contentsline {subsection}{\numberline {2.2}Detenci\IeC {\'o}n m\IeC {\'a}s r\IeC {\'a}pida cerca del objetivo}{3}{subsection.2.2}
 \contentsline {subsection}{\numberline {2.3}Correcci\IeC {\'o}n del comportamiento suicida}{3}{subsection.2.3}
 \contentsline {subsection}{\numberline {2.4}Salida de m\IeC {\'\i }nimos locales}{3}{subsection.2.4}
-\contentsline {subsection}{\numberline {2.5}Reducci\IeC {\'o}n de oscilaciones}{3}{subsection.2.5}
+\contentsline {subsection}{\numberline {2.5}Reducci\IeC {\'o}n de oscilaciones}{4}{subsection.2.5}
