@@ -54,9 +54,36 @@
         \Delta y &= \alpha sen(\theta)
     \end{align*}
 
+    Esto es, el módulo mínimo de la componente atractiva del vector será el módulo del vector anterior, esto es, $\alpha^2$.
+
 
   \subsection{Corrección del comportamiento suicida}
-    Para solucionar este comportamiento simplemente hemos acotado la velocidad máxima del robot. Así, aunque el módulo del vector de movimiento resultante (debido a un factor de repulsión muy grande) fuera muy grande, al estar acotado daría tiempo al robot para girar y evitar el obstáculo.
+    La causa del comportamiento suicida es de nuevo debida al módulo del vector de dirección; en concreto de la componente repulsiva. Al ser la velocidad lineal el módulo del vector de dirección ---que surge de sumar las componentes atractiva y repulsiva---, esta tenderá a infinito cuando la distancia entre el robot y un obstáculo tienda a cero.
+
+    Así, aunque el sentido del vector resultante sea contrario al obstáculo, la velocidad lineal será muy grande y no dejará tiempo al robot para girar.
+
+    Por tanto, para solucionar este comportamiento simplemente hemos acotado la velocidad máxima del robot. Para determinar qué valor poner como cota, hemos analizado la ecuación de la velocidad lineal:
+    \begin{equation}
+        v = \sqrt{\Delta_x^2 + \Delta_y^2}
+        \label{eq:vlineal}
+    \end{equation}
+
+    donde $\Delta_x$ y $\Delta_y$ son las componentes del vector resultante ---suma de las componentes atractiva y repulsivs---:
+    \[
+    \Delta = \Delta_{atractivo} + \Delta_{repulsivo}
+    \]
+
+    En la ecuación \ref{eq:vlineal} podemos que la velocidad lineal máxima del robot en ausencia de obstáculos ---esto es, cuando $\Delta_{repulsivo} = 0$--- es el máxima del módulo de la componente atractiva. Este máximo se alcanza cuando el robot está fuera del radio y la extensión del campo atractivo; es decir, el máximo está regido por las ecuaciones
+    \begin{align*}
+        \Delta_{atractivo_x} &= \alpha \cdot s \cdot cos(\theta) \\
+        \Delta_{atractivo_y} &= \alpha \cdot s \cdot sen(\theta)
+    \end{align*}
+
+    Evidentemente, el módulo máximo de este vector será $(\alpha \cdot s)^2$, así que esta parece una opción razonable para acotar la velocidad máxima cerca de un obstáculo. Sin embargo, después de pruebas empíricas decidimos tomar como valor máximo la raíz cuadrada de este valor; es decir, tomamos como velocidad lineal el siguiente valor:
+    \[
+    v = min(\sqrt{\Delta_x^2 + \Delta_y^2}, \alpha \cdot s)
+    \]
+
 
   \subsection{Salida de mínimos locales}
     Lo primero ha sido determinar la siguiente cuestión: ¿Cómo sabemos que estamos atascados en un mínimo local? Nosotros lo determinamos si no salimos de un radio de 0.5 unidades de distancia durante 5 segundos (25 iteraciones a 5Hz). Una vez hemos decidido, mandamos al robot un goal en una posición aleatoria del mapa. Esto lo mantenemos durante 10 segundos, que es un tiempo viable para salir de una esquina, y después de eso volvemos a mandarle el goal original.
