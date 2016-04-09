@@ -13,6 +13,8 @@ LocalPlanner::LocalPlanner()
     yaw =0;     //Angulo (en radianes) de orientación del robot
     deltaGoal.x = deltaGoal.y = 0;//Componente del campo atractivo
     deltaObst.x = deltaObst.y = 0;//Componente del campo repulsivo (para todos los obstáculos)
+    deltaObstAnterior.x = deltaObstAnterior.y = 0;//Componente del campo repulsivo anterior (para todos los obstáculos)
+
     delta.x = delta.y = 0;    //Componente total
     v_angular = v_lineal = 0; //velocidad angular
 
@@ -114,8 +116,15 @@ void LocalPlanner::setDeltaRepulsivo(){
       deltaObst.y += delta0.y;
     }
 
-    ROS_INFO("Delta obstáculo: %f, %f", deltaObst.x, deltaObst.y);
+    deltaObst.x += deltaObstAnterior.x;
+    deltaObst.y += deltaObstAnterior.y;
 
+    deltaObst.x /= 2;
+    deltaObst.y /= 2;
+
+    deltaObstAnterior = deltaObst;
+
+    ROS_INFO("Delta obstáculo: %f, %f", deltaObst.x, deltaObst.y);
 }
 
 void LocalPlanner::setDeltaTotal(){

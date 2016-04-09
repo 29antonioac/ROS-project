@@ -1,7 +1,5 @@
 // Inspirado en http://robot.wpi.edu/wiki/index.php/Actionlib
 
-
-
 #include <ros/ros.h>
 #include "myPlannerLite.h"
 #include <nav_msgs/Odometry.h> //lo pongo porque vamos a manejar tb. datos de odometría.
@@ -25,19 +23,19 @@ protected:
     //odometría
     //nav_msgs::Odometry odometria; //se rellena con un callback de la subscripción.
     LocalPlanner planner; //el server tiene asociado un objeto planner, es el que
-                          //desarrolla el comportamiento de navegar hasta el objetivo.
+    //desarrolla el comportamiento de navegar hasta el objetivo.
 
 
 public:
     MyActionServer(std::string name):
-        //Crea y configura el action server. Necesita una referencia al manejador del nodo ros, n
-        //Se subscribe al topic "mi_move_base",
-        // Y registra una callback mediante el puntero a la función ejecutaCB
-        // la especificación de la callback es con la sintaxis boost:: porque estamos dentro
-        // de una especificación de server como una clase C++
-        as(n,"mi_move_base",
-           boost::bind(&MyActionServer::ejecutaCB, this, _1), false),
-        action_name(name)
+    //Crea y configura el action server. Necesita una referencia al manejador del nodo ros, n
+    //Se subscribe al topic "mi_move_base",
+    // Y registra una callback mediante el puntero a la función ejecutaCB
+    // la especificación de la callback es con la sintaxis boost:: porque estamos dentro
+    // de una especificación de server como una clase C++
+    as(n,"mi_move_base",
+    boost::bind(&MyActionServer::ejecutaCB, this, _1), false),
+    action_name(name)
     {
         //Registra Callbacks.
         as.registerPreemptCallback(boost::bind(&MyActionServer::preemptCB,this));
@@ -100,16 +98,16 @@ public:
             //Si el action server está muerto o preempted, detener procesamiento
 
             if(!as.isActive() || as.isPreemptRequested())
-                return;
+            return;
 
             //Publicar una actualización de status.
             //Informar del goal , obteniendo los datos del goal enviado
             //Estructura detallada de MoveBaseGoal, Feedback,... en la URL
             //http://ftp.isr.ist.utl.pt/pub/roswiki/doc/api/move_base_msgs/html/msg/MoveBaseGoal.html
             ROS_INFO("...yendo hacia el goal (%f,%f,%f)",
-                     goal->target_pose.pose.position.x,
-                     goal->target_pose.pose.position.y,
-                     goal->target_pose.pose.orientation.w );
+            goal->target_pose.pose.position.x,
+            goal->target_pose.pose.position.y,
+            goal->target_pose.pose.orientation.w );
 
             ROS_INFO("Estoy en la posición:(%f, %f), yaw: %f", planner.pos.x, planner.pos.y,planner.yaw);
             planner.setDeltaAtractivo();
@@ -135,9 +133,9 @@ public:
             feedback.base_position.pose.orientation.w = planner.odometria.pose.pose.orientation.w;
 
             ROS_INFO("...con feedback (%f,%f,%f)",
-                     feedback.base_position.pose.position.x,
-                     feedback.base_position.pose.position.y,
-                     feedback.base_position.pose.orientation.w);
+            feedback.base_position.pose.position.x,
+            feedback.base_position.pose.position.y,
+            feedback.base_position.pose.orientation.w);
 
             // Posición actual
             pos.x = feedback.base_position.pose.position.x;
@@ -148,13 +146,11 @@ public:
                                      (pos.y - oldPos.y) * (pos.y - oldPos.y));
 
             // Si el robot no se ha salido de una circunferencia de radio tol
-            // en las últimas 50 iteraciones (10 segundos), aplazar el objetivo
-            if( newDistance < 4 ){
-                ROS_INFO("\t\t\t\t\t\t\t\t\t\t\tDentro del radio.");
+            // en las últimas 25 iteraciones (5 segundos), aplazar el objetivo
+            if( newDistance < 0.5 ){
                 count++;
 
                 if(count > 25){
-                    // Llamo a un callback. ¿Por qué? Porque puedo.
                     preemptCB();
                     return;
                 }
@@ -170,14 +166,15 @@ public:
         //Publicar el resultado si el goal no está preempted
         if (success)
         {
-            ROS_INFO("%s tuvo éxito al llegar al goal (%f %f %f)", action_name.c_str(),
-                     goal->target_pose.pose.position.x,
-                     goal->target_pose.pose.position.y,
-                     goal->target_pose.pose.orientation.w );
+            ROS_INFO("%s tuvo éxito al llegar al goal (%f %f %f)",
+                        action_name.c_str(),
+                        goal->target_pose.pose.position.x,
+                        goal->target_pose.pose.position.y,
+                        goal->target_pose.pose.orientation.w );
             as.setSucceeded();
         }
         else
-            as.setAborted();
+        as.setAborted();
     }
 };
 
