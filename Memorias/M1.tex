@@ -9,7 +9,7 @@
   \newpage
 
   \section{Resumen}
-  Esta memoria describe brevemente el trabajo realizado para la entrega 2 de la práctica 1.
+  Esta memoria describe brevemente el trabajo realizado para la segunda entrega de la primera práctica.
 
   Se han desarrollado únicamente las tareas de la navegación local sin mapa:
   \begin{itemize}
@@ -86,14 +86,16 @@
 
 
   \subsection{Salida de mínimos locales}
-    Lo primero ha sido determinar la siguiente cuestión: ¿Cómo sabemos que estamos atascados en un mínimo local? Nosotros lo determinamos si no salimos de un radio de $0.5$ unidades de distancia durante $5$ segundos ($25$ iteraciones a 5Hz). Esto lo hacemos almacenando la posición anterior del robot. La mantenemos siempre que la distancia a dicha posición sea menor que $0.5$. En cuanto hay un cambio mayor de dicho umbral, actualizamos la posición anterior para en la siguiente iteración volver a comprobar la diferencia de distancia.
+    Lo primero ha sido determinar la siguiente cuestión: ¿Cómo sabemos que estamos atascados en un mínimo local? Nosotros lo determinamos si no salimos de un radio de $0.5$ unidades de distancia durante $5$ segundos ---$25$ iteraciones a 5Hz---. Esto lo hacemos almacenando la posición anterior del robot. La mantenemos siempre que la distancia a dicha posición sea menor que $0.5$. En cuanto hay un cambio mayor de dicho umbral, actualizamos la posición anterior para en la siguiente iteración volver a comprobar la diferencia de distancia.
 
-    Una vez hemos decidido, mandamos al robot un objetivo en una posición aleatoria del mapa. Esto lo mantenemos durante 10 segundos, que es un tiempo viable para salir de una esquina, y después de eso volvemos a mandarle el objetivo original.
+    Una vez se ha comprobado que el robot está \emph{encerrado} en una región muy pequeña del mapa, le mandamos un objetivo con una posición aleatoria del mapa, gestionando la cancelación del objetivo anterior en el servidor y la creación del nuevo en el cliente. Este nuevo objetivo lo mantenemos durante 10 segundos, que es un tiempo viable para salir de una esquina, y después de eso volvemos a mandarle el objetivo original.
 
-    Si se diera el caso de que la posición aleatoria del mapa está demasiado cerca, o bien el tiempo de salida se ha establecido demasiado corto, no hay problemas: al volver a comprobarlo, se volvería a mandar un objetivo aleatorio y se volvería a intentar. Como nuestro objetivo es salir de un mínimo local, esto nos asegura que en algún momento saldrá y volverá a intentar llegar al objetivo.
+    Si se diera el caso de que la posición aleatoria del mapa está demasiado cerca, o bien el tiempo de salida se ha establecido demasiado corto, no hay problemas: al volver a comprobarlo, se volvería a mandar un objetivo aleatorio y se volvería a intentar. Como nuestro objetivo es salir de un mínimo local, esto nos asegura que en algún momento saldrá y será capaz de llegar al objetivo.
 
   \subsection{Reducción de oscilaciones}
-    Para reducir las oscilaciones hemos ideado lo siguiente: como es la componente repulsiva la que las causa debido a las variaciones bruscas de la dirección del vector, nosotros le aplicamos la media a las dos últimas componentes repulsivas calculadas
+    La causa de las oscilaciones en el movimiento del robot se debe a la componente repulsiva: que sufre variaciones bruscas en la dirección al alejarse y acercase a los obstáculos.
+
+    Para resolver este problema hemos ideado lo siguiente: como queremos suavizar el movimiento, aplicamos la media a las dos últimas componentes repulsivas calculadas
 
     $$ v_{final} = \frac{v_{anterior} + v_{actual}}{2}$$
 
