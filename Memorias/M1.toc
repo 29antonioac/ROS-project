@@ -1,6 +1,8 @@
 \select@language {spanish}
-\contentsline {section}{\numberline {1}Aumento del campo de visi\IeC {\'o}n}{2}{section.1}
-\contentsline {section}{\numberline {2}Detenci\IeC {\'o}n m\IeC {\'a}s r\IeC {\'a}pida cerca del objetivo}{2}{section.2}
-\contentsline {section}{\numberline {3}Correcci\IeC {\'o}n del comportamiento suicida}{2}{section.3}
-\contentsline {section}{\numberline {4}Salida de m\IeC {\'\i }nimos locales}{2}{section.4}
-\contentsline {section}{\numberline {5}Reducci\IeC {\'o}n de oscilaciones}{2}{section.5}
+\contentsline {section}{\numberline {1}Resumen}{2}{section.1}
+\contentsline {section}{\numberline {2}Ejercicio 1}{3}{section.2}
+\contentsline {subsection}{\numberline {2.1}Aumento del campo de visi\IeC {\'o}n}{3}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}Detenci\IeC {\'o}n m\IeC {\'a}s r\IeC {\'a}pida cerca del objetivo}{3}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Correcci\IeC {\'o}n del comportamiento suicida}{3}{subsection.2.3}
+\contentsline {subsection}{\numberline {2.4}Salida de m\IeC {\'\i }nimos locales}{3}{subsection.2.4}
+\contentsline {subsection}{\numberline {2.5}Reducci\IeC {\'o}n de oscilaciones}{3}{subsection.2.5}

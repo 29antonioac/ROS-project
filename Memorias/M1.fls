@@ -1,4 +1,4 @@
-PWD /home/antonio/Git/ROS-project/Memorias
+PWD /mnt/Datos/Documentos/Proyectos/ROS-project/Memorias
 INPUT /usr/share/texmf-dist/web2c/texmf.cnf
 INPUT /var/lib/texmf/web2c/pdftex/pdflatex.fmt
 INPUT M1.tex
@@ -238,6 +238,8 @@ INPUT /usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlib
 INPUT /usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex
 INPUT /usr/share/texmf-dist/tex/latex/doublestroke/dsfont.sty
 INPUT /usr/share/texmf-dist/tex/latex/doublestroke/dsfont.sty
+INPUT /usr/share/texmf-dist/tex/latex/titlesec/titlesec.sty
+INPUT /usr/share/texmf-dist/tex/latex/titlesec/titlesec.sty
 INPUT /usr/share/texmf-dist/tex/latex/lm/lmodern.sty
 INPUT /usr/share/texmf-dist/tex/latex/lm/lmodern.sty
 INPUT /usr/share/texmf-dist/tex/latex/microtype/microtype.sty
@@ -336,6 +338,7 @@ INPUT M1.toc
 INPUT M1.toc
 INPUT /usr/share/texmf-dist/fonts/tfm/public/lm/ec-lmbx10.tfm
 OUTPUT M1.toc
+INPUT /usr/share/texmf-dist/fonts/tfm/public/lm/ec-lmbx12.tfm
 INPUT M1.aux
 INPUT ./M1.out
 INPUT ./M1.out
