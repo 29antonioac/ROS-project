@@ -56,7 +56,7 @@ public:
         //no pongo result porque MoveBaseAction no lo tiene definido.
 
         //Entiendo que el server pondrá el status adecuado. Imagino que habrá que hacerlo
-        as.setPreempted(result,"Goal en estado preempted");
+        as.setPreempted();
     }
 
     //Callback para procesar el goal
@@ -79,6 +79,13 @@ public:
 
         //procesamiento del goal
         bool success = true;
+
+        // Contador para salir de mínimos locales
+        int count = 0;
+
+        Tupla pos, oldPos;
+        oldPos.x = 0;
+        oldPos.y = 0;
 
         while (true)
         {
@@ -110,8 +117,9 @@ public:
             planner.setDeltaTotal();
             planner.setv_Angular();
             planner.setv_Lineal();
-            if (planner.goalAchieved())
+            if (planner.goalAchieved()){
                 break;
+            }
             planner.setSpeed();
             ROS_INFO("Enviando velocidad (%f,%f)", planner.v_lineal, planner.v_angular);
 
@@ -131,6 +139,31 @@ public:
                      feedback.base_position.pose.position.y,
                      feedback.base_position.pose.orientation.w);
 
+            // Posición actual
+            pos.x = feedback.base_position.pose.position.x;
+            pos.y = feedback.base_position.pose.position.y;
+
+            // Distancia entre la posición actual y la de referencia
+            float newDistance = sqrt((pos.x - oldPos.x) * (pos.x - oldPos.x) +
+                                     (pos.y - oldPos.y) * (pos.y - oldPos.y));
+
+            // Si el robot no se ha salido de una circunferencia de radio tol
+            // en las últimas 50 iteraciones (10 segundos), aplazar el objetivo
+            if( newDistance < 4 ){
+                ROS_INFO("\t\t\t\t\t\t\t\t\t\t\tDentro del radio.");
+                count++;
+
+                if(count > 25){
+                    // Llamo a un callback. ¿Por qué? Porque puedo.
+                    preemptCB();
+                    return;
+                }
+            }
+            else{
+                oldPos = pos;
+                count = 0;
+            }
+
             as.publishFeedback(feedback);
             rate.sleep();
         }
@@ -145,12 +178,6 @@ public:
         }
         else
             as.setAborted();
-
-
-
-
-
-
     }
 };
 
@@ -161,9 +188,6 @@ int main(int argc, char** argv)
 {
 
     ros::init(argc, argv, "mi_move_base");
-    ROS_INFO("wwwiiiiiiiiii");
-
-
 
     //Just a check to make sure the usage was correct
 
@@ -177,8 +201,6 @@ int main(int argc, char** argv)
     }
 
     //Spawn the server
-    ROS_INFO("fdgfgdgfdfgdfgdfg");
-
     MyActionServer server(ros::this_node::getName());
     ROS_INFO("Spawned!");
 

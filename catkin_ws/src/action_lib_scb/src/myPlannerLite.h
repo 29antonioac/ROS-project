@@ -1,5 +1,5 @@
-#ifndef LOCAL PLANNER_H
-#define LOCAL PLANNER_H
+#ifndef LOCAL_PLANNER_H
+#define LOCAL_PLANNER_H
 
 
 #include "ros/ros.h"
@@ -44,7 +44,8 @@ class LocalPlanner
         void setGoal(const move_base_msgs::MoveBaseGoalConstPtr& goal) {
             posGoal.x = goal->target_pose.pose.position.x;
             posGoal.y = goal->target_pose.pose.position.y;
-            }
+            ROS_INFO("Nuevo objetivo recibido: (%.2f, %.2f)", posGoal.x, posGoal.y);
+        }
 
         bool goalAchieved();    //Devuelve true cuando se ha alcanzado el objetivo
         void setDeltaAtractivo();

@@ -1,6 +1,9 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#define RED '\033[0;31m'
+#define NC '\033[0m'
+
 /**
 * http://stackoverflow.com/a/4609795
 */
