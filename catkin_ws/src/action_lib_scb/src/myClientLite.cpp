@@ -45,10 +45,7 @@ int main(int argc, char** argv) {
 	ROS_INFO("Esperando al resultado  de la acción");
 	ac.waitForResult();
 
-
-	ROS_INFO("Nuevo ENTRANDO EN EL WHIIIIIIIIIIIIIIIIIIIIIIIIILEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
 	while(ac.getState() == actionlib::SimpleClientGoalState::PREEMPTED){
-		ROS_INFO("Nuevo DENTRO DEL WHIIIIIIIIIIIIIIIIIIIIIIIIILEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
 		move_base_msgs::MoveBaseGoal randomGoal;
 
 		randomGoal.target_pose.header.frame_id = 	"map";
@@ -58,17 +55,10 @@ int main(int argc, char** argv) {
 		randomGoal.target_pose.pose.position.y =	rand() % 40 - 20;
 		randomGoal.target_pose.pose.orientation.w =	1;
 
-		ROS_INFO("Enviando nuevo goal.");
+		ROS_INFO("Enviando nuevo goal aleatorio.");
 
 		ac.sendGoal(randomGoal);
 
-		// // Estar 10 segundos con el nuevo objetivo aleatorio
-		// ROS_INFO("Nuevo. Antes del sleep");
-		// sleep(10);
-		// ROS_INFO("Nuevo. Después del sleep");
-		//
-		// // Cancelar el objetivo aleatorio
-		// ac.cancelGoal();
 		bool finished = ac.waitForResult(ros::Duration(10));
 
 		if(!finished){

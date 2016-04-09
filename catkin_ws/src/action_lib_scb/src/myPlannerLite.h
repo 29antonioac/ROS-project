@@ -8,6 +8,8 @@
 #include "geometry_msgs/Twist.h"
 #include <move_base_msgs/MoveBaseAction.h>
 
+#include <deque>
+
 typedef struct tupla {double x; double y;} Tupla;
 typedef struct conf {double radius; double spread; double intens;
                      } PFConf;
@@ -25,6 +27,7 @@ class LocalPlanner
         double yaw;     //Angulo (en radianes) de orientación del robot
         Tupla deltaGoal;//Componente del campo atractivo
         Tupla deltaObst;//Componente del campo repulsivo (para todos los obstáculos)
+        Tupla deltaObstAnterior; //Componente del campo repulsivo anterior
         Tupla delta;    //Componente total
         double v_angular; //velocidad angular
         double v_lineal;  //velocidad lineal
