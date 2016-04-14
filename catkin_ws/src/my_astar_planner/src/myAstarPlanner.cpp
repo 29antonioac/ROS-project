@@ -43,21 +43,16 @@
 #include <string>
 
 
-
-
-
-
-
 //register this planner as a BaseGlobalPlanner plugin
 PLUGINLIB_EXPORT_CLASS(myastar_planner::MyastarPlanner, nav_core::BaseGlobalPlanner)
 
 namespace myastar_planner {
 
-    //devuelve un puntero a un nodo en una lista de nodos (nodo = coupleOfCells) a partir del índice del nodo
-    list<coupleOfCells>::iterator getPositionInList(list<coupleOfCells> & list1, unsigned int cellID);
-
-    //comprueba si un índice de nodo existe en una lista de nodos.
-    bool isContains(list<coupleOfCells> & list1, int cellID);
+    // //devuelve un puntero a un nodo en una lista de nodos (nodo = coupleOfCells) a partir del índice del nodo
+    // cells_set::iterator getPositionInList(cells_set & list1, unsigned int cellID);
+    //
+    // //comprueba si un índice de nodo existe en una lista de nodos.
+    // bool isContains(cells_set & list1, int cellID);
 
     MyastarPlanner::MyastarPlanner()
     : costmap_ros_(NULL), initialized_(false){}
@@ -170,7 +165,7 @@ namespace myastar_planner {
         cpstart.hCost = MyastarPlanner::calculateHCost(cpstart.index,cpgoal.index);
 
         //insertamos el nodo inicial en abiertos
-        MyastarPlanner::openList.push_back(cpstart);
+        MyastarPlanner::openList.insert(cpstart);
 
 
         ROS_INFO("Inserto en Abiertos: %d", cpstart.index );
@@ -181,15 +176,14 @@ namespace myastar_planner {
 
         while (!MyastarPlanner::openList.empty()) //while the open list is not empty continuie the search
         {
-
             //escoger el nodo (coupleOfCells) de abiertos que tiene el valor más pequeño de f.
-            coupleOfCells COfCells=openList.front();
+            coupleOfCells COfCells = *(openList.begin());
             currentIndex=COfCells.index;
 
             //vamos a insertar ese nodo  en cerrados
 
             //obtenemos un iterador a ese nodo en la lista de abiertos
-            list<coupleOfCells>::iterator it=getPositionInList(openList,currentIndex);
+            list<coupleOfCells>::iterator it = getPositionInList(openList,currentIndex);
 
 
             //copiamos el contenido de ese nodo a una variable nodo auxiliar
@@ -201,11 +195,11 @@ namespace myastar_planner {
 
 
             //y esa variable la insertamos en cerrados
-            MyastarPlanner::closedList.push_back(cpstart);
-            //ROS_INFO("Inserto en CERRADOS: %d", (*it).index );
-            ROS_INFO("G: %f, H: %f, F: %f", (*it).gCost, (*it).hCost, (*it).fCost);
-            ROS_INFO("Index: %d Parent: %d", (*it).index, (*it).parent);
+            MyastarPlanner::closedList.insert(cpstart);
 
+            ROS_INFO("Inserto en CERRADOS: %d", COfCells.index );
+            ROS_INFO("G: %f, H: %f, F: %f", COfCells.gCost, COfCells.hCost, COfCells.fCost);
+            ROS_INFO("Index: %d Parent: %d", COfCells.index, COfCells.parent);
 
 
             // Si el nodo recién insertado es el goal, ¡plan encontrado!
@@ -241,8 +235,8 @@ namespace myastar_planner {
                 while (currentCouple.index != currentParent) //e.d. mientras no lleguemos al nodo start
                 {
                     //encontramos la posición de currentParent en cerrados
+                    cells_set::iterator it = getPositionInList(closedList,currentParent);
 
-                    list<coupleOfCells>::iterator it=getPositionInList(closedList,currentParent);
                     //hacemos esa posición que sea el currentCouple
                     currentCouple.index=currentParent;
                     currentCouple.parent=(*it).parent;
@@ -258,7 +252,6 @@ namespace myastar_planner {
 
                     costmap_->indexToCells(currentCouple.index, mpose_x, mpose_y);
                     costmap_->mapToWorld(mpose_x, mpose_y, wpose_x, wpose_y);
-
 
                     //después creamos la pose
                     geometry_msgs::PoseStamped pose;
@@ -287,28 +280,24 @@ namespace myastar_planner {
                 return true;
             }
 
-            //Si no hemos encontrado plan aún eliminamos el nodo insertado de ABIERTOS.
-            openList.pop_front();
-
             //Buscamos en el costmap las celdas adyacentes a la actual
-            vector <unsigned int> neighborCells=findFreeNeighborCell(currentIndex);
+            vector<unsigned int> neighborCells = findFreeNeighborCell(currentIndex);
 
             //Ignoramos las celdas que ya existen en CERRADOS
-
+            vector<unsigned int> notClosedNeighbours = getCellsNotInList(closedList, neighborCells)
 
             //Determinamos las celdas que ya están en ABIERTOS y las que no están en ABIERTOS
-
+            vector<unsigned int> notOpenedNeighbours = getCellsNotInList(openList, neighborCells)
 
 
             //Añadimos a ABIERTOS las celdas que todavía no están en ABIERTO, marcando el nodo actual como su padre
             //ver la función addNeighborCellsToOpenList(openList, neighborsNotInOpenList, currentIndex, coste_del_nodo_actual, indice_del_nodo_goal);
-            addNeighborCellsToOpenList(openList, neighborCells, currentIndex, cpstart.gCost, cpgoal.index);
+            addNeighborCellsToOpenList(openList, notOpenedNeighbours, currentIndex, cpstart.gCost, cpgoal.index);
             explorados++;
 
 
-
+            //TODO:
             //Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
-
         }
 
         if(openList.empty())  // if the openList is empty: then failure to find a path
@@ -352,10 +341,12 @@ namespace myastar_planner {
     /*********************************************************************************/
     list<coupleOfCells>::iterator getPositionInList(list<coupleOfCells> & list1, unsigned int cellID)
     {
-        for (list<coupleOfCells>::iterator it = list1.begin(); it != list1.end(); it++){
+        for (cells_set::iterator it = list1.begin(); it != list1.end(); it++){
             if (it->index == cellID)
             return it;
         }
+        //If the element does not exist, return a pointer to the end
+        return list.end();
     }
 
 
@@ -388,6 +379,20 @@ namespace myastar_planner {
 
     }
 
+    vector<unsigned int> MyastarPlanner::getCellsNotInList(cells_set & list, vector<unsigned int> cells_idx){
+        vector<unsigned int> result;
+
+        for (size_t i = 0; i < cells_idx.size(); i++) {
+            unsigned int current_idx = cells_idx[i];
+            // If the current index is not in the open set add it to the result subset
+            if(std::find(list.begin(), list.end(), current_idx) == list.end()){
+                result.push_back(current_idx);
+            }
+        }
+
+        return result;
+    }
+
 
     /*******************************************************************************/
     //Function Name: isContains
@@ -416,7 +421,7 @@ namespace myastar_planner {
     //Output:
     //Description: it is used to add the neighbor Cells to the open list
     /*********************************************************************************/
-    void MyastarPlanner::addNeighborCellsToOpenList(list<coupleOfCells> & OPL, vector <unsigned int> neighborCells, unsigned int parent, float gCostParent, unsigned int goalCell) //,float tBreak)
+    void MyastarPlanner::addNeighborCellsToOpenList(cells_set & OPL, vector <unsigned int> neighborCells, unsigned int parent, float gCostParent, unsigned int goalCell) //,float tBreak)
     {
         vector <coupleOfCells> neighborsCellsOrdered;
         for(uint i=0; i< neighborCells.size(); i++)
@@ -433,7 +438,7 @@ namespace myastar_planner {
 
             CP.fCost=CP.gCost+CP.hCost;
             // neighborsCellsOrdered.push_back(CP);
-            OPL.push_back(CP);
+            OPL.insert(CP);
         }
     }
 
@@ -460,5 +465,5 @@ namespace myastar_planner {
             }
 
             plan_pub_.publish(gui_path);
-        }        
+        }
 }

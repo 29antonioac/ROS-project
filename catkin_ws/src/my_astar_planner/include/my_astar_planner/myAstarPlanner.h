@@ -63,8 +63,8 @@
 
 //includes específicos para hacer referencia a la implementación del algoritmo astar.
 
-#include<vector>
-#include <list>
+#include <vector>
+#include <set>          // std::set
 
 
 namespace myastar_planner{
@@ -85,6 +85,14 @@ namespace myastar_planner{
         double hCost;
         double fCost;
     };
+
+    struct compareCells{
+        bool operator()(const coupleOfCells& lhs, const coupleOfCells& rhs) const{
+            return lhs.fCost > rhs.fCost;
+        }
+    };
+
+    typedef set<coupleOfCells, compareCells> cells_set;
 
 
     class MyastarPlanner : public nav_core::BaseGlobalPlanner { //implementa la interfaz que provee nav_core::BaseGlobalPlanner
@@ -128,8 +136,8 @@ namespace myastar_planner{
             ros::Publisher plan_pub_;
 
             //necesarios para manejar las listas de abiertos y cerrados de astar.
-            list<coupleOfCells> openList; //!< the open list: it contains all the expanded cells (current cells)
-            list<coupleOfCells> closedList; //!< the closed list: contains the explored cells
+            cells_set openList; //!< the open list: it contains all the expanded cells (current cells)
+            cells_set closedList; //!< the closed list: contains the explored cells
 
             /**
             * @brief  Checks the legality of the robot footprint at a position and orientation using the world model
@@ -153,13 +161,17 @@ namespace myastar_planner{
             //devuelve celdas adyacentes a CellID que estén libres
             vector <unsigned int> findFreeNeighborCell (unsigned int CellID);
 
+			// Devuelve el subconjunto de cells_idx que no está en list
+			vector<unsigned int> getCellsNotInList(cells_set & list, vector<unsigned int> cells_idx){
+
+
             /*******************************************************************************/
             //Function Name: addNeighborCellsToOpenList
             //Inputs: the open list, the neighbors Cells and the parent Cell
             //Output:
             //Description: it is used to add the neighbor Cells to the open list
             /*********************************************************************************/
-            void addNeighborCellsToOpenList(list<coupleOfCells> & OPL, vector <unsigned int> neighborCells, unsigned int parent, float gCostParent, unsigned int goalCell);
+            void addNeighborCellsToOpenList(cells_set & OPL, vector <unsigned int> neighborCells, unsigned int parent, float gCostParent, unsigned int goalCell);
 
             double getMoveCost(unsigned int here, unsigned int there);
 
