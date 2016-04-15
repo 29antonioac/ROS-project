@@ -183,7 +183,7 @@ namespace myastar_planner {
             //vamos a insertar ese nodo  en cerrados
 
             //obtenemos un iterador a ese nodo en la lista de abiertos
-            list<coupleOfCells>::iterator it = getPositionInList(openList,currentIndex);
+            cells_set::iterator it = getPositionInList(openList,currentIndex);
 
 
             //copiamos el contenido de ese nodo a una variable nodo auxiliar
