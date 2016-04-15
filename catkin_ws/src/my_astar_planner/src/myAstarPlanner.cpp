@@ -41,6 +41,7 @@
 // para debugging
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 
 //register this planner as a BaseGlobalPlanner plugin
@@ -284,10 +285,10 @@ namespace myastar_planner {
             vector<unsigned int> neighborCells = findFreeNeighborCell(currentIndex);
 
             //Ignoramos las celdas que ya existen en CERRADOS
-            vector<unsigned int> notClosedNeighbours = getCellsNotInList(closedList, neighborCells)
+            vector<unsigned int> notClosedNeighbours = getCellsNotInList(closedList, neighborCells);
 
             //Determinamos las celdas que ya están en ABIERTOS y las que no están en ABIERTOS
-            vector<unsigned int> notOpenedNeighbours = getCellsNotInList(openList, neighborCells)
+            vector<unsigned int> notOpenedNeighbours = getCellsNotInList(openList, neighborCells);
 
 
             //Añadimos a ABIERTOS las celdas que todavía no están en ABIERTO, marcando el nodo actual como su padre
@@ -339,14 +340,14 @@ namespace myastar_planner {
     //Output: index of the cell in the list
     //Description: it is used to search the index of a cell in a list
     /*********************************************************************************/
-    list<coupleOfCells>::iterator getPositionInList(list<coupleOfCells> & list1, unsigned int cellID)
+    cells_set::iterator getPositionInList(cells_set & list1, unsigned int cellID)
     {
         for (cells_set::iterator it = list1.begin(); it != list1.end(); it++){
             if (it->index == cellID)
             return it;
         }
         //If the element does not exist, return a pointer to the end
-        return list.end();
+        return list1.end();
     }
 
 
@@ -385,7 +386,8 @@ namespace myastar_planner {
         for (size_t i = 0; i < cells_idx.size(); i++) {
             unsigned int current_idx = cells_idx[i];
             // If the current index is not in the open set add it to the result subset
-            if(std::find(list.begin(), list.end(), current_idx) == list.end()){
+
+            if(find_if(list.begin(), list.end(), findIndex(current_idx)) == list.end()){
                 result.push_back(current_idx);
             }
         }
@@ -400,9 +402,9 @@ namespace myastar_planner {
     //Output: true or false
     //Description: it is used to check if a cell exists in the open list or in the closed list
     /*********************************************************************************/
-    bool isContains(list<coupleOfCells> & list1, int cellID)
+    bool isContains(cells_set & list1, int cellID)
     {
-        for (list<coupleOfCells>::iterator it = list1.begin(); it != list1.end(); it++){
+        for (cells_set::iterator it = list1.begin(); it != list1.end(); it++){
             if (it->index == cellID)
             return true;
         }

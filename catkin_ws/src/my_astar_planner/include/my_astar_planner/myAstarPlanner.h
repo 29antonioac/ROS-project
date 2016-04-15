@@ -92,6 +92,17 @@ namespace myastar_planner{
         }
     };
 
+	struct findIndex{
+	 findIndex(const int& idx) : idx_(idx) {}
+
+	 bool operator()(const coupleOfCells& obj) const{
+	   return obj.index == idx_;
+	 }
+
+	 private:
+	   const int& idx_;
+	};
+
     typedef set<coupleOfCells, compareCells> cells_set;
 
 
@@ -162,7 +173,7 @@ namespace myastar_planner{
             vector <unsigned int> findFreeNeighborCell (unsigned int CellID);
 
 			// Devuelve el subconjunto de cells_idx que no está en list
-			vector<unsigned int> getCellsNotInList(cells_set & list, vector<unsigned int> cells_idx){
+			vector<unsigned int> getCellsNotInList(cells_set & list, vector<unsigned int> cells_idx);
 
 
             /*******************************************************************************/
