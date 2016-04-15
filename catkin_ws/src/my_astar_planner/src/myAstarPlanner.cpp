@@ -144,6 +144,10 @@ namespace myastar_planner {
         /*************** HASTA AQUÍ GESTIÓN DE ROS *********************************/
         /****************************************************************************/
 
+        // Eliminamos todo lo que hay en la lista de abiertos y de cerrados.
+        openList.clear();
+        closedList.clear();
+
         //pasamos el goal y start a un nodo (estructura coupleOfCells)
         coupleOfCells cpstart, cpgoal;
         double goal_x = goal.pose.position.x;
@@ -168,44 +172,45 @@ namespace myastar_planner {
         //insertamos el nodo inicial en abiertos
         MyastarPlanner::openList.insert(cpstart);
 
-
         ROS_INFO("Inserto en Abiertos: %d", cpstart.index );
         ROS_INFO("Index del goal: %d", cpgoal.index );
 
         unsigned int explorados = 0;
         unsigned int currentIndex = cpstart.index;
+        coupleOfCells currentNode;
 
-        while (!MyastarPlanner::openList.empty()) //while the open list is not empty continuie the search
+        while (!MyastarPlanner::openList.empty()) //while the open list is not empty continue the search
         {
-            //escoger el nodo (coupleOfCells) de abiertos que tiene el valor más pequeño de f.
-            coupleOfCells COfCells = *(openList.begin());
-            currentIndex=COfCells.index;
+            // Tomamso el nodo de abiertos que tiene el valor más pequeño de f y lo eliminamos de abiertos
+            currentNode = *(openList.begin());
+            currentIndex = currentNode.index;
 
-            //vamos a insertar ese nodo  en cerrados
+            // //vamos a insertar ese nodo  en cerrados
+            //
+            // //obtenemos un iterador a ese nodo en la lista de abiertos
+            // cells_set::iterator it = getPositionInList(openList,currentIndex);
+            //
+            //
+            // //copiamos el contenido de ese nodo a una variable nodo auxiliar
+            // cpstart.index=currentIndex;
+            // cpstart.parent=(*it).parent;
+            // cpstart.gCost=(*it).gCost;
+            // cpstart.hCost=(*it).hCost;
+            // cpstart.fCost=(*it).fCost;
 
-            //obtenemos un iterador a ese nodo en la lista de abiertos
-            cells_set::iterator it = getPositionInList(openList,currentIndex);
 
+            // Eliminamos el nodo actual de abiertos y lo metemos en cerrados
+            openList.erase(openList.begin());
+            MyastarPlanner::closedList.insert(currentNode);
 
-            //copiamos el contenido de ese nodo a una variable nodo auxiliar
-            cpstart.index=currentIndex;
-            cpstart.parent=(*it).parent;
-            cpstart.gCost=(*it).gCost;
-            cpstart.hCost=(*it).hCost;
-            cpstart.fCost=(*it).fCost;
-
-
-            //y esa variable la insertamos en cerrados
-            MyastarPlanner::closedList.insert(cpstart);
-
-            ROS_INFO("Inserto en CERRADOS: %d", COfCells.index );
-            ROS_INFO("G: %f, H: %f, F: %f", COfCells.gCost, COfCells.hCost, COfCells.fCost);
-            ROS_INFO("Index: %d Parent: %d", COfCells.index, COfCells.parent);
+            ROS_INFO("Inserto en CERRADOS: %d", currentNode.index );
+            ROS_INFO("G: %f, H: %f, F: %f", currentNode.gCost, currentNode.hCost, currentNode.fCost);
+            ROS_INFO("Index: %d Parent: %d", currentNode.index, currentNode.parent);
 
 
             // Si el nodo recién insertado es el goal, ¡plan encontrado!
 
-            if(currentIndex==cpgoal.index  || explorados == 2000)
+            if(currentIndex == cpgoal.index  || explorados == 2000)
             {
                 //el plan lo construimos partiendo del goal, del parent del goal y saltando en cerrados "de parent en parent"
                 //y vamos insertando al final los waypoints (los nodos de cerrados)
@@ -230,8 +235,8 @@ namespace myastar_planner {
                 plan.push_back(pose);
                 ROS_INFO("Inserta en Plan: %f, %f", pose.pose.position.x, pose.pose.position.y);
 
-                coupleOfCells currentCouple = cpstart;
-                unsigned int currentParent = cpstart.parent;
+                coupleOfCells currentCouple = currentNode;
+                unsigned int currentParent = currentCouple.parent;
 
                 while (currentCouple.index != currentParent) //e.d. mientras no lleguemos al nodo start
                 {
@@ -239,11 +244,11 @@ namespace myastar_planner {
                     cells_set::iterator it = getPositionInList(closedList,currentParent);
 
                     //hacemos esa posición que sea el currentCouple
-                    currentCouple.index=currentParent;
-                    currentCouple.parent=(*it).parent;
-                    currentCouple.gCost=(*it).gCost;
-                    currentCouple.hCost=(*it).hCost;
-                    currentCouple.fCost=(*it).fCost;
+                    currentCouple.index = currentParent;
+                    currentCouple.parent = (*it).parent;
+                    currentCouple.gCost = (*it).gCost;
+                    currentCouple.hCost = (*it).hCost;
+                    currentCouple.fCost = (*it).fCost;
 
                     //creamos una PoseStamped con la información de currentCouple.index
 
@@ -288,17 +293,16 @@ namespace myastar_planner {
             vector<unsigned int> notClosedNeighbours = getCellsNotInList(closedList, neighborCells);
 
             //Determinamos las celdas que ya están en ABIERTOS y las que no están en ABIERTOS
-            vector<unsigned int> notOpenedNeighbours = getCellsNotInList(openList, neighborCells);
+            vector<unsigned int> notOpenedNorClosedNeighbours = getCellsNotInList(openList, notClosedNeighbours);
 
 
             //Añadimos a ABIERTOS las celdas que todavía no están en ABIERTO, marcando el nodo actual como su padre
             //ver la función addNeighborCellsToOpenList(openList, neighborsNotInOpenList, currentIndex, coste_del_nodo_actual, indice_del_nodo_goal);
-            addNeighborCellsToOpenList(openList, notOpenedNeighbours, currentIndex, cpstart.gCost, cpgoal.index);
+            addNeighborCellsToOpenList(openList, notOpenedNorClosedNeighbours, currentIndex, cpstart.gCost, cpgoal.index);
             explorados++;
 
-
-            //TODO:
-            //Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
+            //TODO: Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
+            updateParents(openList, notClosedNeighbours);
         }
 
         if(openList.empty())  // if the openList is empty: then failure to find a path
@@ -385,14 +389,40 @@ namespace myastar_planner {
 
         for (size_t i = 0; i < cells_idx.size(); i++) {
             unsigned int current_idx = cells_idx[i];
-            // If the current index is not in the open set add it to the result subset
 
+            // If the current index is not in the open set add it to the result subset
             if(find_if(list.begin(), list.end(), findIndex(current_idx)) == list.end()){
                 result.push_back(current_idx);
             }
         }
 
         return result;
+    }
+
+    void MyastarPlanner::updateParents(cells_set& list, vector<unsigned int> cells_idx){
+        // 
+        // // Recorremos todos los vecinos
+        // for (size_t i = 0; i < cells_idx.size(); i++) {
+        //     unsigned int current_idx = cells_idx[i];
+        //
+        //     // Buscamos si está en abiertos
+        //     cells_set::iterator openCell = find_if(list.begin(), list.end(), findIndex(current_idx));
+        //
+        //     // Si lo está, buscamos su padre
+        //     if(openCell != list.end()){
+        //         cells_set::iterator parentOfOpenedCell = getPositionInList(list, openCell->parent);
+        //         cells_set::iterator neighbourCell = getPositionInList(list, cells_idx[i]);
+        //         cells_set::iterator parentOfNeighbourCell = getPositionInList(list, neighbourCell->parent);
+        //
+        //         if(parentOfNeighbourCell->fCost < parentOfOpenedCell->fCost){
+        //             openCell->parent = neighbourCell->parent;
+        //             openCell->gCost = neighbourCell->gCost;
+        //             openCell->hCost = neighbourCell->hCost;
+        //             openCell->fCost = neighbourCell->fCost;
+        //         }
+        //
+        //     }
+        // }
     }
 
 
@@ -414,7 +444,6 @@ namespace myastar_planner {
     double MyastarPlanner::getMoveCost(unsigned int here, unsigned int there) {
         //calculo el coste de moverme entre celdas adyacentes como la distancia euclídea.
         return calculateHCost(here,there);
-
     }
 
     /*******************************************************************************/
@@ -423,23 +452,23 @@ namespace myastar_planner {
     //Output:
     //Description: it is used to add the neighbor Cells to the open list
     /*********************************************************************************/
-    void MyastarPlanner::addNeighborCellsToOpenList(cells_set & OPL, vector <unsigned int> neighborCells, unsigned int parent, float gCostParent, unsigned int goalCell) //,float tBreak)
+    void MyastarPlanner::addNeighborCellsToOpenList(cells_set & OPL, vector<unsigned int> neighborCells, unsigned int parent, float gCostParent, unsigned int goalCell) //,float tBreak)
     {
-        vector <coupleOfCells> neighborsCellsOrdered;
         for(uint i=0; i< neighborCells.size(); i++)
         {
             coupleOfCells CP;
-            CP.index=neighborCells[i]; //insert the neighbor cell
-            CP.parent=parent; //insert the parent cell
+            CP.index = neighborCells[i]; //insert the neighbor cell
+            CP.parent = parent; //insert the parent cell
+
             //calculate the gCost
-            CP.gCost=gCostParent+getMoveCost(parent,neighborCells[i]);
+            CP.gCost = gCostParent + getMoveCost(parent,neighborCells[i]);
 
             //calculate the hCost: Euclidian distance from the neighbor cell to the goalCell
-            CP.hCost=calculateHCost(neighborCells[i],goalCell);
-            //calculate fcost
+            CP.hCost = calculateHCost(neighborCells[i],goalCell);
 
-            CP.fCost=CP.gCost+CP.hCost;
-            // neighborsCellsOrdered.push_back(CP);
+            //calculate fcost
+            CP.fCost = CP.gCost + CP.hCost;
+
             OPL.insert(CP);
         }
     }

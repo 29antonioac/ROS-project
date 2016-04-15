@@ -1,10 +1,3 @@
-/**
-* TODO: usar una lista con prioridad para los abiertos, ahora mismo es
-* una lista normal
-*/
-
-
-
 /*********************************************************************
 *
 * Software License Agreement (BSD License)
@@ -88,7 +81,7 @@ namespace myastar_planner{
 
     struct compareCells{
         bool operator()(const coupleOfCells& lhs, const coupleOfCells& rhs) const{
-            return lhs.fCost > rhs.fCost;
+            return lhs.fCost < rhs.fCost;
         }
     };
 
@@ -174,6 +167,9 @@ namespace myastar_planner{
 
 			// Devuelve el subconjunto de cells_idx que no está en list
 			vector<unsigned int> getCellsNotInList(cells_set & list, vector<unsigned int> cells_idx);
+
+            // Actualiza los padres si el coste de f es mejor
+            void updateParents(cells_set& list, vector<unsigned int> cells_idx);
 
 
             /*******************************************************************************/
