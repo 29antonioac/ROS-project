@@ -48,11 +48,11 @@ PLUGINLIB_EXPORT_CLASS(myastar_planner::MyastarPlanner, nav_core::BaseGlobalPlan
 
 namespace myastar_planner {
 
-    // //devuelve un puntero a un nodo en una lista de nodos (nodo = coupleOfCells) a partir del índice del nodo
-    // cells_set::iterator getPositionInList(cells_set & list1, unsigned int cellID);
-    //
-    // //comprueba si un índice de nodo existe en una lista de nodos.
-    // bool isContains(cells_set & list1, int cellID);
+    //devuelve un puntero a un nodo en una lista de nodos (nodo = coupleOfCells) a partir del índice del nodo
+    cells_set::iterator getPositionInList(cells_set & list1, unsigned int cellID);
+
+    //comprueba si un índice de nodo existe en una lista de nodos.
+    bool isContains(cells_set & list1, int cellID);
 
     MyastarPlanner::MyastarPlanner()
     : costmap_ros_(NULL), initialized_(false){}
