@@ -207,45 +207,13 @@ namespace myastar_planner {
             currentNode = *(openList.begin());
             currentIndex = currentNode.index;
 
-            // //vamos a insertar ese nodo  en cerrados
-            //
-            // //obtenemos un iterador a ese nodo en la lista de abiertos
-            // cells_set::iterator it = getPositionInList(openList,currentIndex);
-            //
-            //
-            // //copiamos el contenido de ese nodo a una variable nodo auxiliar
-            // cpstart.index=currentIndex;
-            // cpstart.parent=(*it).parent;
-            // cpstart.gCost=(*it).gCost;
-            // cpstart.hCost=(*it).hCost;
-            // cpstart.fCost=(*it).fCost;
-
-            if(find_if(openList.begin(), openList.end(), findIndex(currentIndex)) == closedList.end()){
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: no hay celda %i en la lista de abiertos", currentIndex);
-            }
-
             // Eliminamos el nodo actual de abiertos y lo metemos en cerrados
             openList.erase(openList.begin());
             closedList.insert(currentNode);
 
-            cells_set::iterator fail = find_if(openList.begin(), openList.end(), findIndex(currentIndex));
-
-            if(fail != openList.end()){
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Hemos eliminado la celda siguiente de abiertos:");
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Índice: %d", currentNode.index );
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: G: %f, H: %f, F: %f", currentNode.gCost, currentNode.hCost, currentNode.fCost);
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Index: %d Parent: %d", currentNode.index, currentNode.parent);
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: ============================");
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Pero hemos encontrado esto");
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Índice: %d", fail->index );
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: G: %f, H: %f, F: %f", fail->gCost, fail->hCost, fail->fCost);
-                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Index: %d Parent: %d", fail->index, fail->parent);
-            }
-
-
-            ROS_INFO("Inserto en CERRADOS: %d", currentNode.index );
-            ROS_INFO("G: %f, H: %f, F: %f", currentNode.gCost, currentNode.hCost, currentNode.fCost);
-            ROS_INFO("Index: %d Parent: %d", currentNode.index, currentNode.parent);
+            ROS_INFO("Inserto en CERRADOS:");
+            ROS_INFO("\tIndex: %d Parent: %d", currentNode.index, currentNode.parent);
+            ROS_INFO("\tG: %f, H: %f, F: %f", currentNode.gCost, currentNode.hCost, currentNode.fCost);
 
             // Si el nodo recién insertado es el goal, ¡plan encontrado!
 
@@ -270,8 +238,8 @@ namespace myastar_planner {
                 geometry_msgs::PoseStamped pose;
                 pose.header.stamp =  ros::Time::now();
                 pose.header.frame_id = goal.header.frame_id;//debe tener el mismo frame que el goal pasado por parámetro
-                pose.pose.position.x = wpose_x;
-                pose.pose.position.y = wpose_y;
+                pose.pose.position.x = goal.pose.position.x;
+                pose.pose.position.y = goal.pose.position.y;
                 pose.pose.position.z = 0.0;
                 pose.pose.orientation.x = 0.0;
                 pose.pose.orientation.y = 0.0;
@@ -333,6 +301,8 @@ namespace myastar_planner {
                 return true;
             }
 
+
+
             //Buscamos en el costmap las celdas adyacentes a la actual
             vector<unsigned int> neighborCells = findFreeNeighborCell(currentIndex);
 
@@ -342,37 +312,22 @@ namespace myastar_planner {
             //Determinamos las celdas que ya están en ABIERTOS y las que no están en ABIERTOS
             vector<unsigned int> notOpenedNorClosedNeighbours = getCellsNotInList(openList, notClosedNeighbours);
 
-            bool error_cerrados = false;
-
-            for (int i = 0; i < notClosedNeighbours.size(); i++) {
-                if(find_if(closedList.begin(), closedList.end(), findIndex(notClosedNeighbours[i])) != closedList.end()){
-                    ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: la celda %i está en cerrados y en noCerrados", notClosedNeighbours[i]);
-                    error_cerrados = true;
-                }
-            }
-
-            if (error_cerrados) {
-                for (cells_set::iterator cell = closedList.begin(); cell != closedList.end(); cell++) {
-                    ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: lista de cerrados: %i", cell->index);
-                }
-            }
-
-            // TODO: Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
-            updateParents(openList, closedList, notClosedNeighbours, currentNode.index, currentNode.gCost);
-
             //Añadimos a ABIERTOS las celdas que todavía no están en ABIERTO, marcando el nodo actual como su padre
             //ver la función addNeighborCellsToOpenList(openList, neighborsNotInOpenList, currentIndex, coste_del_nodo_actual, indice_del_nodo_goal);
             addNeighborCellsToOpenList(openList, notOpenedNorClosedNeighbours, currentIndex, currentNode.gCost, cpgoal.index);
+
+            // Aumentamos el contador de nodos explorados
             explorados++;
+
+            // Para los nodos expandidos que ya están en abiertos, comprobar su coste y actualizarlo si fuera necesario
+            updateParents(openList, closedList, notClosedNeighbours, currentNode.index, currentNode.gCost);
         }
 
         if(openList.empty())  // if the openList is empty: then failure to find a path
         {
             ROS_INFO("Failure to find a path !");
             return false;
-            // exit(1);
         }
-
     };
 
 
@@ -400,7 +355,6 @@ namespace myastar_planner {
         //
         // double magic_constant = 0;
 
-
         // //primero hay que convertir el currentCouple.index a world coordinates
         // unsigned int mpose_x, mpose_y;
         // double wpose_x, wpose_y;
@@ -408,9 +362,9 @@ namespace myastar_planner {
         // costmap_->indexToCells(start, mpose_x, mpose_y);
         // costmap_->mapToWorld(mpose_x, mpose_y, wpose_x, wpose_y);
 
-        double obstacleCost = footprintCost(wstart_x, wstart_y, 1);
+        // double obstacleCost = footprintCost(wstart_x, wstart_y, 1);
 
-        return sqrt((pow(wstart_x - wgoal_x,2))+pow(wstart_y - wgoal_y, 2)) + obstacleCost;
+        return sqrt((pow(wstart_x - wgoal_x,2))+pow(wstart_y - wgoal_y, 2))/* + obstacleCost*/;
     }
 
 
