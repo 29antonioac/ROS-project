@@ -86,14 +86,13 @@ namespace myastar_planner{
     };
 
 	struct findIndex{
-	 findIndex(const int& idx) : idx_(idx) {}
+	 findIndex(int idx) : idx_(idx) {}
 
 	 bool operator()(const coupleOfCells& obj) const{
 	   return obj.index == idx_;
 	 }
 
-	 private:
-	   const int& idx_;
+     int idx_;
 	};
 
     typedef set<coupleOfCells, compareCells> cells_set;
@@ -169,7 +168,11 @@ namespace myastar_planner{
 			vector<unsigned int> getCellsNotInList(cells_set & list, vector<unsigned int> cells_idx);
 
             // Actualiza los padres si el coste de f es mejor
-            void updateParents(cells_set& list, vector<unsigned int> cells_idx);
+            void updateParents(cells_set& openList, cells_set& closedList, vector<unsigned int> cells_idx);
+
+            // Calcular la distancia al obstáculo más cercano
+            float distanceToClosestObject(unsigned int CellID);
+
 
 
             /*******************************************************************************/

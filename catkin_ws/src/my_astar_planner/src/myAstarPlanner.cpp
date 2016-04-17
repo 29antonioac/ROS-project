@@ -94,11 +94,33 @@ namespace myastar_planner {
         }
 
         std::vector<geometry_msgs::Point> footprint = costmap_ros_->getRobotFootprint();
-        //if we have no footprint... do nothing
-        if(footprint.size() < 3)
-        return -1.0;
 
-        return -1.0;
+        //if we have no footprint... do nothing
+        if(footprint.size() < 3){
+            ROS_INFO("FOOTPRINTCOST: there's no footprint :(");
+            return 0;
+        }
+
+        geometry_msgs::Point point;
+        unsigned int mpoint_x, mpoint_y;
+
+        for (size_t i = 0; i < footprint.size(); i++){
+            point = footprint[i];
+            costmap_->worldToMap(x_i + point.x, y_i + point.y, mpoint_x, mpoint_y);
+
+            if( (mpoint_x>=0) && (mpoint_x < costmap_->getSizeInCellsX()) &&
+                (mpoint_y>=0) && (mpoint_y < costmap_->getSizeInCellsY()) &&
+                costmap_->getCost(mpoint_x, mpoint_y) != costmap_2d::FREE_SPACE){
+                ROS_INFO("FOOTPRINTCOST: No freespace in point (%i, %i)", mpoint_x, mpoint_y);
+                return 1;
+            }
+        }
+
+        return 0;
+
+        // // // check if the footprint is legal
+        // // double footprint_cost = costmap_->footprintCost(x_i, y_i, theta_i, footprint);
+        // return footprint_cost;
     }
 
     //función llamada por move_base para obtener el plan.
@@ -181,7 +203,7 @@ namespace myastar_planner {
 
         while (!MyastarPlanner::openList.empty()) //while the open list is not empty continue the search
         {
-            // Tomamso el nodo de abiertos que tiene el valor más pequeño de f y lo eliminamos de abiertos
+            // Tomamos el nodo de abiertos que tiene el valor más pequeño de f y lo eliminamos de abiertos
             currentNode = *(openList.begin());
             currentIndex = currentNode.index;
 
@@ -198,19 +220,37 @@ namespace myastar_planner {
             // cpstart.hCost=(*it).hCost;
             // cpstart.fCost=(*it).fCost;
 
+            if(find_if(openList.begin(), openList.end(), findIndex(currentIndex)) == closedList.end()){
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: no hay celda %i en la lista de abiertos", currentIndex);
+            }
 
             // Eliminamos el nodo actual de abiertos y lo metemos en cerrados
             openList.erase(openList.begin());
-            MyastarPlanner::closedList.insert(currentNode);
+            closedList.insert(currentNode);
+
+            cells_set::iterator fail = find_if(openList.begin(), openList.end(), findIndex(currentIndex));
+
+            if(fail != openList.end()){
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Hemos eliminado la celda siguiente de abiertos:");
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Índice: %d", currentNode.index );
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: G: %f, H: %f, F: %f", currentNode.gCost, currentNode.hCost, currentNode.fCost);
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Index: %d Parent: %d", currentNode.index, currentNode.parent);
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: ============================");
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Pero hemos encontrado esto");
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Índice: %d", fail->index );
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: G: %f, H: %f, F: %f", fail->gCost, fail->hCost, fail->fCost);
+                ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: Index: %d Parent: %d", fail->index, fail->parent);
+            }
+
 
             ROS_INFO("Inserto en CERRADOS: %d", currentNode.index );
             ROS_INFO("G: %f, H: %f, F: %f", currentNode.gCost, currentNode.hCost, currentNode.fCost);
             ROS_INFO("Index: %d Parent: %d", currentNode.index, currentNode.parent);
 
-
             // Si el nodo recién insertado es el goal, ¡plan encontrado!
 
-            if(currentIndex == cpgoal.index  || explorados == 2000)
+            // if(currentIndex == cpgoal.index  || explorados == 2000)
+            if(currentIndex == cpgoal.index)
             {
                 //el plan lo construimos partiendo del goal, del parent del goal y saltando en cerrados "de parent en parent"
                 //y vamos insertando al final los waypoints (los nodos de cerrados)
@@ -218,13 +258,20 @@ namespace myastar_planner {
                 ROS_INFO("PLAN ENCONTRADO!!!");
 
                 //convertimos goal a poseStamped nueva
+                //
+                //primero hay que convertir el currentCouple.index a world coordinates
+                unsigned int mpose_x, mpose_y;
+                double wpose_x, wpose_y;
+
+                costmap_->indexToCells(currentIndex, mpose_x, mpose_y);
+                costmap_->mapToWorld(mpose_x, mpose_y, wpose_x, wpose_y);
 
 
                 geometry_msgs::PoseStamped pose;
                 pose.header.stamp =  ros::Time::now();
                 pose.header.frame_id = goal.header.frame_id;//debe tener el mismo frame que el goal pasado por parámetro
-                pose.pose.position.x = goal_x;
-                pose.pose.position.y = goal_y;
+                pose.pose.position.x = wpose_x;
+                pose.pose.position.y = wpose_y;
                 pose.pose.position.z = 0.0;
                 pose.pose.orientation.x = 0.0;
                 pose.pose.orientation.y = 0.0;
@@ -295,14 +342,29 @@ namespace myastar_planner {
             //Determinamos las celdas que ya están en ABIERTOS y las que no están en ABIERTOS
             vector<unsigned int> notOpenedNorClosedNeighbours = getCellsNotInList(openList, notClosedNeighbours);
 
+            bool error_cerrados = false;
+
+            for (int i = 0; i < notClosedNeighbours.size(); i++) {
+                if(find_if(closedList.begin(), closedList.end(), findIndex(i)) != closedList.end()){
+                    ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: la celda %i está en cerrados y en noCerrados", i);
+                    error_cerrados = true;
+                }
+            }
+
+            if (error_cerrados) {
+                for (cells_set::iterator cell = closedList.begin(); cell != closedList.end(); cell++) {
+                    ROS_INFO("ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR: lista de cerrados: %i", cell->index);
+                }
+            }
+
 
             //Añadimos a ABIERTOS las celdas que todavía no están en ABIERTO, marcando el nodo actual como su padre
             //ver la función addNeighborCellsToOpenList(openList, neighborsNotInOpenList, currentIndex, coste_del_nodo_actual, indice_del_nodo_goal);
             addNeighborCellsToOpenList(openList, notOpenedNorClosedNeighbours, currentIndex, cpstart.gCost, cpgoal.index);
             explorados++;
 
-            //TODO: Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
-            updateParents(openList, notClosedNeighbours);
+            // TODO: Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
+            updateParents(openList, closedList, notClosedNeighbours);
         }
 
         if(openList.empty())  // if the openList is empty: then failure to find a path
@@ -328,7 +390,27 @@ namespace myastar_planner {
         costmap_->indexToCells(goal, mgoal_x, mgoal_y);
         costmap_->mapToWorld(mgoal_x, mgoal_y, wgoal_x, wgoal_y);
 
-        return sqrt((pow(wstart_x - wgoal_x,2))+pow(wstart_y - wgoal_y, 2));
+        // double distanceToObjects = distanceToClosestObject(start);
+        // double securityCost;
+        //
+        //
+        // if (distanceToObjects == -1)
+        //     securityCost = 0;
+        // else
+        //     securityCost = 1/distanceToObjects;
+        //
+        // double magic_constant = 0;
+
+        double obstacleCost = footprintCost(mstart_x, mstart_y, 1);
+
+        //primero hay que convertir el currentCouple.index a world coordinates
+        unsigned int mpose_x, mpose_y;
+        double wpose_x, wpose_y;
+
+        costmap_->indexToCells(start, mpose_x, mpose_y);
+        costmap_->mapToWorld(mpose_x, mpose_y, wpose_x, wpose_y);
+
+        return sqrt((pow(wstart_x - wgoal_x,2))+pow(wstart_y - wgoal_y, 2)) + obstacleCost;
     }
 
 
@@ -367,14 +449,18 @@ namespace myastar_planner {
     vector <unsigned int> MyastarPlanner::findFreeNeighborCell (unsigned int CellID){
 
         unsigned int mx, my;
+        double wx, wy;
         costmap_->indexToCells(CellID,mx,my);
         vector <unsigned int>  freeNeighborCells;
 
         for (int x=-1;x<=1;x++)
         for (int y=-1; y<=1;y++){
+            costmap_->mapToWorld(mx+x, my+y, wx, wy);
+
             //check whether the index is valid
             if ((mx+x>=0)&&(mx+x < costmap_->getSizeInCellsX())&&(my+y >=0 )&&(my+y < costmap_->getSizeInCellsY())){
-                if(costmap_->getCost(mx+x,my+y) == costmap_2d::FREE_SPACE   && (!(x==0 && y==0))){
+                if(costmap_->getCost(mx+x,my+y) == costmap_2d::FREE_SPACE &&
+                (!(x==0 && y==0))){
                     unsigned int index = costmap_->getIndex(mx+x,my+y);
                     freeNeighborCells.push_back(index);
                 }
@@ -399,30 +485,63 @@ namespace myastar_planner {
         return result;
     }
 
-    void MyastarPlanner::updateParents(cells_set& list, vector<unsigned int> cells_idx){
-        // 
-        // // Recorremos todos los vecinos
-        // for (size_t i = 0; i < cells_idx.size(); i++) {
-        //     unsigned int current_idx = cells_idx[i];
-        //
-        //     // Buscamos si está en abiertos
-        //     cells_set::iterator openCell = find_if(list.begin(), list.end(), findIndex(current_idx));
-        //
-        //     // Si lo está, buscamos su padre
-        //     if(openCell != list.end()){
-        //         cells_set::iterator parentOfOpenedCell = getPositionInList(list, openCell->parent);
-        //         cells_set::iterator neighbourCell = getPositionInList(list, cells_idx[i]);
-        //         cells_set::iterator parentOfNeighbourCell = getPositionInList(list, neighbourCell->parent);
-        //
-        //         if(parentOfNeighbourCell->fCost < parentOfOpenedCell->fCost){
-        //             openCell->parent = neighbourCell->parent;
-        //             openCell->gCost = neighbourCell->gCost;
-        //             openCell->hCost = neighbourCell->hCost;
-        //             openCell->fCost = neighbourCell->fCost;
-        //         }
-        //
-        //     }
-        // }
+    float MyastarPlanner::distanceToClosestObject(unsigned int CellID){
+        unsigned int mx, my;
+        costmap_->indexToCells(CellID,mx,my);
+        float minDistance;
+
+        int steps = 0;
+        bool isOccupiedHorizontal, isOccupiedDiagonal;
+
+
+        do {
+            steps++;
+            isOccupiedHorizontal =  costmap_->getCost(mx + steps,my) != costmap_2d::FREE_SPACE ||
+                                    costmap_->getCost(mx - steps,my) != costmap_2d::FREE_SPACE ||
+                                    costmap_->getCost(mx, my + steps) != costmap_2d::FREE_SPACE ||
+                                    costmap_->getCost(mx, my - steps) != costmap_2d::FREE_SPACE;
+            isOccupiedDiagonal =    costmap_->getCost(mx + steps,my + steps) != costmap_2d::FREE_SPACE ||
+                                    costmap_->getCost(mx + steps,my - steps) != costmap_2d::FREE_SPACE ||
+                                    costmap_->getCost(mx - steps,my + steps) != costmap_2d::FREE_SPACE ||
+                                    costmap_->getCost(mx - steps,my - steps) != costmap_2d::FREE_SPACE ;
+
+        }while(steps <= 20 && !isOccupiedHorizontal && !isOccupiedDiagonal);
+
+        if (isOccupiedHorizontal)
+            return steps;
+        else if (isOccupiedDiagonal)
+            return sqrt(2) * steps;
+        else
+            return -1;
+
+    }
+
+    void MyastarPlanner::updateParents(cells_set& openList, cells_set& closedList, vector<unsigned int> cells_idx){
+        // Recorremos todos los vecinos
+        for (size_t i = 0; i < cells_idx.size(); i++) {
+            unsigned int current_idx = cells_idx[i];
+
+            // Buscamos si está en abiertos
+            cells_set::iterator openCell = find_if(openList.begin(), openList.end(), findIndex(current_idx));
+
+            // Si lo está, buscamos su padre
+            if(openCell != openList.end()){
+                cells_set::iterator parentOfOpenedCell = getPositionInList(closedList, openCell->parent);
+
+                cells_set::iterator neighbourCell = getPositionInList(openList, cells_idx[i]);
+                cells_set::iterator parentOfNeighbourCell = getPositionInList(closedList, neighbourCell->parent);
+
+                if(parentOfNeighbourCell->fCost < parentOfOpenedCell->fCost){
+                    openList.erase(openCell);
+                    openList.insert(*neighbourCell);
+                    // openCell->parent = neighbourCell->parent;
+                    // openCell->gCost = neighbourCell->gCost;
+                    // openCell->hCost = neighbourCell->hCost;
+                    // openCell->fCost = neighbourCell->fCost;
+                }
+
+            }
+        }
     }
 
 
