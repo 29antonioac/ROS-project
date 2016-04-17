@@ -168,7 +168,7 @@ namespace myastar_planner{
 			vector<unsigned int> getCellsNotInList(cells_set & list, vector<unsigned int> cells_idx);
 
             // Actualiza los padres si el coste de f es mejor
-            void updateParents(cells_set& openList, cells_set& closedList, vector<unsigned int> cells_idx);
+            void updateParents(cells_set& openList, cells_set& closedList, vector<unsigned int> cells_idx, unsigned int parentIdx, double parentCost);
 
             // Calcular la distancia al obstáculo más cercano
             float distanceToClosestObject(unsigned int CellID);

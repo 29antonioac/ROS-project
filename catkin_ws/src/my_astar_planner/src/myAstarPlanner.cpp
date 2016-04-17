@@ -357,14 +357,13 @@ namespace myastar_planner {
                 }
             }
 
-            // // TODO: Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
-            // updateParents(openList, closedList, notClosedNeighbours, cpstart.index, cpstart.gCost);
+            // TODO: Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
+            updateParents(openList, closedList, notClosedNeighbours, currentNode.index, currentNode.gCost);
 
             //Añadimos a ABIERTOS las celdas que todavía no están en ABIERTO, marcando el nodo actual como su padre
             //ver la función addNeighborCellsToOpenList(openList, neighborsNotInOpenList, currentIndex, coste_del_nodo_actual, indice_del_nodo_goal);
             addNeighborCellsToOpenList(openList, notOpenedNorClosedNeighbours, currentIndex, currentNode.gCost, cpgoal.index);
             explorados++;
-
         }
 
         if(openList.empty())  // if the openList is empty: then failure to find a path
@@ -517,38 +516,34 @@ namespace myastar_planner {
 
     }
 
-    // void MyastarPlanner::updateParents(cells_set& openList, cells_set& closedList, vector<unsigned int> cells_idx, double parentCost){
-    //     // Recorremos todos los vecinos
-    //     for (size_t i = 0; i < cells_idx.size(); i++) {
-    //         unsigned int current_idx = cells_idx[i];
-    //
-    //         // Buscamos si está en abiertos
-    //         cells_set::iterator openCell = find_if(openList.begin(), openList.end(), findIndex(current_idx));
-    //
-    //         // Si lo está, buscamos su padre
-    //         if(openCell != openList.end()){
-    //             newCost = parentCost + getMoveCost()
-    //
-    //
-    //
-    //
-    //             cells_set::iterator parentOfOpenedCell = getPositionInList(closedList, openCell->parent);
-    //
-    //             cells_set::iterator neighbourCell = getPositionInList(openList, cells_idx[i]);
-    //             cells_set::iterator parentOfNeighbourCell = getPositionInList(closedList, neighbourCell->parent);
-    //
-    //             if(parentOfNeighbourCell->fCost < parentOfOpenedCell->fCost){
-    //                 openList.erase(openCell);
-    //                 openList.insert(*neighbourCell);
-    //                 // openCell->parent = neighbourCell->parent;
-    //                 // openCell->gCost = neighbourCell->gCost;
-    //                 // openCell->hCost = neighbourCell->hCost;
-    //                 // openCell->fCost = neighbourCell->fCost;
-    //             }
-    //
-    //         }
-    //     }
-    // }
+    void MyastarPlanner::updateParents(cells_set& openList, cells_set& closedList, vector<unsigned int> cells_idx, unsigned int parentIdx, double parentCost){
+        // Recorremos todos los vecinos
+        for (size_t i = 0; i < cells_idx.size(); i++) {
+            unsigned int currentIdx = cells_idx[i];
+
+            // Buscamos si está en abiertos
+            cells_set::iterator openCell = find_if(openList.begin(), openList.end(), findIndex(currentIdx));
+
+            // Si lo está, buscamos su padre
+            if(openCell != openList.end()){
+                double newCost = parentCost + getMoveCost(parentIdx, currentIdx);
+
+                if(newCost < openCell->gCost){
+                    coupleOfCells replacement;
+
+                    // Replace the previous element, changing its parent, its gCost and its fCost.
+                    replacement.index = currentIdx;
+                    replacement.parent = parentIdx;
+                    replacement.gCost = newCost;
+                    replacement.hCost = openCell->hCost;
+                    replacement.fCost = replacement.gCost + replacement.hCost;
+
+                    openList.erase(openCell);
+                    openList.insert(replacement);
+                }
+            }
+        }
+    }
 
 
     /*******************************************************************************/
