@@ -357,14 +357,14 @@ namespace myastar_planner {
                 }
             }
 
+            // TODO: Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
+            updateParents(openList, closedList, notClosedNeighbours);
 
             //Añadimos a ABIERTOS las celdas que todavía no están en ABIERTO, marcando el nodo actual como su padre
             //ver la función addNeighborCellsToOpenList(openList, neighborsNotInOpenList, currentIndex, coste_del_nodo_actual, indice_del_nodo_goal);
             addNeighborCellsToOpenList(openList, notOpenedNorClosedNeighbours, currentIndex, cpstart.gCost, cpgoal.index);
             explorados++;
 
-            // TODO: Para los nodos que ya están en abiertos, comprobar en cerrados su coste y actualizarlo si fuera necesario
-            updateParents(openList, closedList, notClosedNeighbours);
         }
 
         if(openList.empty())  // if the openList is empty: then failure to find a path
@@ -401,14 +401,15 @@ namespace myastar_planner {
         //
         // double magic_constant = 0;
 
-        double obstacleCost = footprintCost(mstart_x, mstart_y, 1);
 
-        //primero hay que convertir el currentCouple.index a world coordinates
-        unsigned int mpose_x, mpose_y;
-        double wpose_x, wpose_y;
+        // //primero hay que convertir el currentCouple.index a world coordinates
+        // unsigned int mpose_x, mpose_y;
+        // double wpose_x, wpose_y;
+        //
+        // costmap_->indexToCells(start, mpose_x, mpose_y);
+        // costmap_->mapToWorld(mpose_x, mpose_y, wpose_x, wpose_y);
 
-        costmap_->indexToCells(start, mpose_x, mpose_y);
-        costmap_->mapToWorld(mpose_x, mpose_y, wpose_x, wpose_y);
+        double obstacleCost = footprintCost(wstart_x, wstart_y, 1);
 
         return sqrt((pow(wstart_x - wgoal_x,2))+pow(wstart_y - wgoal_y, 2)) + obstacleCost;
     }
