@@ -249,8 +249,8 @@ namespace myastar_planner {
 
             // Si el nodo recién insertado es el goal, ¡plan encontrado!
 
-            // if(currentIndex == cpgoal.index  || explorados == 2000)
-            if(currentIndex == cpgoal.index)
+            if(currentIndex == cpgoal.index  || explorados == 2000)
+            // if(currentIndex == cpgoal.index)
             {
                 //el plan lo construimos partiendo del goal, del parent del goal y saltando en cerrados "de parent en parent"
                 //y vamos insertando al final los waypoints (los nodos de cerrados)
