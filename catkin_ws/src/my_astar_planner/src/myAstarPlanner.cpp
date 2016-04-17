@@ -117,10 +117,6 @@ namespace myastar_planner {
         }
 
         return 0;
-
-        // // // check if the footprint is legal
-        // // double footprint_cost = costmap_->footprintCost(x_i, y_i, theta_i, footprint);
-        // return footprint_cost;
     }
 
     //función llamada por move_base para obtener el plan.
