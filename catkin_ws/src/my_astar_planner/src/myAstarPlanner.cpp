@@ -217,8 +217,7 @@ namespace myastar_planner {
 
             // Si el nodo recién insertado es el goal, ¡plan encontrado!
 
-            // if(currentIndex == cpgoal.index  || explorados == 2000)
-            if(currentIndex == cpgoal.index)
+            if(currentIndex == cpgoal.index  || explorados == 2000)
             {
                 //el plan lo construimos partiendo del goal, del parent del goal y saltando en cerrados "de parent en parent"
                 //y vamos insertando al final los waypoints (los nodos de cerrados)
@@ -300,7 +299,6 @@ namespace myastar_planner {
                 publishPlan(plan);
                 return true;
             }
-
 
 
             //Buscamos en el costmap las celdas adyacentes a la actual
@@ -401,7 +399,6 @@ namespace myastar_planner {
     *
     *********************************************************************************/
     vector <unsigned int> MyastarPlanner::findFreeNeighborCell (unsigned int CellID){
-
         unsigned int mx, my;
         double wx, wy;
         costmap_->indexToCells(CellID,mx,my);
@@ -421,7 +418,6 @@ namespace myastar_planner {
             }
         }
         return  freeNeighborCells;
-
     }
 
     vector<unsigned int> MyastarPlanner::getCellsNotInList(cells_set & list, vector<unsigned int> cells_idx){

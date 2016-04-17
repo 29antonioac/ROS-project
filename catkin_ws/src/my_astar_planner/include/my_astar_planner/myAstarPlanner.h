@@ -79,12 +79,18 @@ namespace myastar_planner{
         double fCost;
     };
 
+    /**
+     * Class to order the stl::set elements in the list of open nodes
+     */
     struct compareCells{
         bool operator()(const coupleOfCells& lhs, const coupleOfCells& rhs) const{
             return lhs.fCost < rhs.fCost;
         }
     };
 
+    /**
+     * Class to find elements in a stl::set by its index
+     */
 	struct findIndex{
 	 findIndex(int idx) : idx_(idx) {}
 
@@ -95,6 +101,9 @@ namespace myastar_planner{
      int idx_;
 	};
 
+    /**
+     * Set of cells
+     */
     typedef set<coupleOfCells, compareCells> cells_set;
 
 
@@ -172,7 +181,6 @@ namespace myastar_planner{
 
             // Calcular la distancia al obstáculo más cercano
             float distanceToClosestObject(unsigned int CellID);
-
 
 
             /*******************************************************************************/
