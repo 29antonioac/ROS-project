@@ -59,6 +59,7 @@
 #include <vector>
 #include <set>          // std::set
 
+#define COST_INF (+99999)
 
 namespace myastar_planner{
     /**

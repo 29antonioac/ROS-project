@@ -98,25 +98,41 @@ namespace myastar_planner {
         //if we have no footprint... do nothing
         if(footprint.size() < 3){
             ROS_INFO("FOOTPRINTCOST: there's no footprint :(");
-            return 0;
+            return -1;
         }
 
         geometry_msgs::Point point;
         unsigned int mpoint_x, mpoint_y;
 
+        bool obstacleNear = false;
+
         for (size_t i = 0; i < footprint.size(); i++){
             point = footprint[i];
             costmap_->worldToMap(x_i + point.x, y_i + point.y, mpoint_x, mpoint_y);
 
+            // If the cell is valid
             if( (mpoint_x>=0) && (mpoint_x < costmap_->getSizeInCellsX()) &&
-                (mpoint_y>=0) && (mpoint_y < costmap_->getSizeInCellsY()) &&
-                costmap_->getCost(mpoint_x, mpoint_y) != costmap_2d::FREE_SPACE){
-                ROS_INFO("FOOTPRINTCOST: No freespace in point (%i, %i)", mpoint_x, mpoint_y);
-                return 1;
+                (mpoint_y>=0) && (mpoint_y < costmap_->getSizeInCellsY())){
+                    unsigned char cost = costmap_->getCost(mpoint_x, mpoint_y);
+
+                    // If there is an obstacle ON the cell
+                    if(cost == costmap_2d::LETHAL_OBSTACLE){
+                        ROS_INFO("Obstaculo LETAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL");
+                        return COST_INF;
+                    }
+                    // If there is an obstacle NEAR the cell
+                    else if(cost == costmap_2d::INSCRIBED_INFLATED_OBSTACLE){
+                        obstacleNear = true;
+                    }
             }
         }
 
-        return 0;
+        if(obstacleNear){
+            return 1;
+        }
+        else{
+            return 0;
+        }
     }
 
     //función llamada por move_base para obtener el plan.
@@ -136,7 +152,6 @@ namespace myastar_planner {
 
         //obtenemos el costmap global  que está publicado por move_base.
         costmap_ = costmap_ros_->getCostmap();
-
 
         //Obligamos a que el marco de coordenadas del goal enviado y del costmap sea el mismo.
         //esto es importante para evitar errores de transformaciones de coordenadas.
@@ -233,8 +248,8 @@ namespace myastar_planner {
                 geometry_msgs::PoseStamped pose;
                 pose.header.stamp =  ros::Time::now();
                 pose.header.frame_id = goal.header.frame_id;//debe tener el mismo frame que el goal pasado por parámetro
-                pose.pose.position.x = goal.pose.position.x;
-                pose.pose.position.y = goal.pose.position.y;
+                pose.pose.position.x = goal_x;
+                pose.pose.position.y = goal_y;
                 pose.pose.position.z = 0.0;
                 pose.pose.orientation.x = 0.0;
                 pose.pose.orientation.y = 0.0;
@@ -404,10 +419,13 @@ namespace myastar_planner {
         for (int y=-1; y<=1;y++){
             costmap_->mapToWorld(mx+x, my+y, wx, wy);
 
+            bool validFootprint = (footprintCost(wx, wy, 0) != COST_INF);
+
             //check whether the index is valid
             if ((mx+x>=0)&&(mx+x < costmap_->getSizeInCellsX())&&(my+y >=0 )&&(my+y < costmap_->getSizeInCellsY())){
                 if(costmap_->getCost(mx+x,my+y) == costmap_2d::FREE_SPACE &&
-                (!(x==0 && y==0))){
+                  (!(x==0 && y==0)) &&
+                  validFootprint){
                     unsigned int index = costmap_->getIndex(mx+x,my+y);
                     freeNeighborCells.push_back(index);
                 }
